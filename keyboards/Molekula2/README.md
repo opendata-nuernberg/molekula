@@ -20,12 +20,12 @@ Features:
 
 ### Electrical
 
-- MCU - nice!nano _(recommended to support original creator)_ or its chinese clone (https://www.aliexpress.us/item/3256809026736876.html)
-- 36 Choc switches (https://keeb.supply/collections/choc-switches)
-- 36 MX switches (https://www.keychron.com/products/gateron-baby-kangaroo-tactile-switch)
-- 36 Choc hotswap sockets (https://www.aliexpress.us/item/3256808357010978.html)
-- 36 MX hotswap sockets (https://www.aliexpress.us/item/3256807045726008.html)
-- 36 [SMD SOD-123 1N4148](https://www.aliexpress.us/item/3256809479695335.html) diodes
+- MCU - RP2040 Helios 16M (https://de.aliexpress.com/item/1005010018679591.html)
+- 38 Choc switches (https://keeb.supply/collections/choc-switches)
+- OR 38 MX switches (https://www.keychron.com/products/gateron-baby-kangaroo-tactile-switch)
+- 38 Choc hotswap sockets (https://www.aliexpress.us/item/3256808357010978.html)
+- OR 38 MX hotswap sockets (https://www.aliexpress.us/item/3256807045726008.html)
+- 38 [SMD SOD-123 1N4148](https://www.aliexpress.us/item/3256809479695335.html) diodes
 - 1 [Magnetic connector 12pin](https://www.aliexpress.us/item/3256804525488442.html)
 - 1 rotary encoder, [low profile EC12](https://www.aliexpress.com/item/1005003636548797.html) is recommended (no click though). Versions with click often has issues with power consumption, be careful
 - 1 [30mm knob](https://www.aliexpress.us/item/3256810097582487.html)
