@@ -18,26 +18,37 @@ Features:
 
 ## Bill of materials
 
-- MCU - nice!nano _(recommended to support original creator)_ or its chinese clone
-- 36 MX/KS-33/Choc switches
-- 36 MX/KS-33/Choc hotswap sockets
-- 36 [SMD SOD-123 1N4148](https://www.aliexpress.com/item/1005002882901030.html) diodes
-- Battery up to 602040 size - this is what I'm using, should be enough but you may try to go bigger (check that there's enough space inside using 3D project)
-- _[Optional]_ Vertical 2pin 2.54mm JST [connector](https://www.aliexpress.com/item/1005004938361514.html) for battery
-- [Magnetic connector 12pin](https://www.aliexpress.com/item/1005004609718442.html)
+### Electrical
+
+- MCU - nice!nano _(recommended to support original creator)_ or its chinese clone (https://www.aliexpress.us/item/3256809026736876.html)
+- 36 Choc switches (https://keeb.supply/collections/choc-switches)
+- 36 MX switches (https://www.keychron.com/products/gateron-baby-kangaroo-tactile-switch)
+- 36 Choc hotswap sockets (https://www.aliexpress.us/item/3256808357010978.html)
+- 36 MX hotswap sockets (https://www.aliexpress.us/item/3256807045726008.html)
+- 36 [SMD SOD-123 1N4148](https://www.aliexpress.us/item/3256809479695335.html) diodes
+- 1 [Magnetic connector 12pin](https://www.aliexpress.us/item/3256804525488442.html)
 - 1 rotary encoder, [low profile EC12](https://www.aliexpress.com/item/1005003636548797.html) is recommended (no click though). Versions with click often has issues with power consumption, be careful
-- 1 [30mm knob](https://www.aliexpress.com/item/1005001783212821.html)
+- 1 [30mm knob](https://www.aliexpress.us/item/3256810097582487.html)
+- 2 Vertical 12pin 0.5mm [FFC/FPC connector](https://www.aliexpress.com/item/10000000737049.html)
+- 4 Horizontal 12pin 0.5mm [FFC/FPC connector](https://www.aliexpress.com/item/10000348360254.html)
+- 2 12pin 0.5mm 5cm [FFC cable](https://www.aliexpress.com/item/1005007561337665.html) - reverse direction
+- 2 12pin 0.5mm 5cm [FFC cable](https://www.aliexpress.com/item/1005007561337665.html) - same side (forward direction)
+- 1 SMD 4x4x1.5mm [push button](https://www.aliexpress.com/item/32802382507.html)
+- 2.54mm female pin [headers](https://www.aliexpress.com/item/4001122376295.html)
+
+### Mechanical
+
 - 4/5mm, 6/8mm and 10mm [M2 screws with flat head](https://www.aliexpress.com/item/4001248931159.html) (choose black or silver based on case color/preference)
 - [M2 nuts](https://www.aliexpress.com/item/1005001412230125.html)
 - M2 3/4mm [heatset inserts](https://www.aliexpress.com/item/1005004624377733.html) - diameter 3.2mm for resin case or 3.5mm for thermoplastic
-- Vertical 12pin 0.5mm [FFC/FPC connector](https://www.aliexpress.com/item/10000000737049.html)
-- Horizontal 12pin 0.5mm [FFC/FPC connector](https://www.aliexpress.com/item/10000348360254.html)
-- 12pin 0.5mm 5cm [FFC cable](https://www.aliexpress.com/item/1005007561337665.html) - both reverse and same side variants
-- SMD 4x4x1.5mm [push button](https://www.aliexpress.com/item/32802382507.html)
 - [7x1.5mm legs](https://www.aliexpress.com/item/1005002995402961.html)
 - [10x3mm magnets](https://www.aliexpress.com/item/1005006802780901.html) - for connecting sides
 - [8x2mm magnets](https://www.aliexpress.com/item/1005005426580014.html) - for transportation (optional)
-- 2.54mm female pin [headers](https://www.aliexpress.com/item/4001122376295.html)
+
+### Optional
+
+- Battery up to 602040 size - this is what I'm using, should be enough but you may try to go bigger (check that there's enough space inside using 3D project)
+- _[Optional]_ Vertical 2pin 2.54mm JST [connector](https://www.aliexpress.com/item/1005004938361514.html) for battery
 - 5pin [headers](https://www.aliexpress.com/item/1005005742644313.html) - source of pins for socketing, and also a connector for nice!view
 
 ## PCBA
