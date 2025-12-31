@@ -35,6 +35,7 @@ Features:
 - 2 12pin 0.5mm 5cm [FFC cable](https://www.aliexpress.com/item/1005007561337665.html) - same side (forward direction)
 - 1 SMD 4x4x1.5mm [push button](https://www.aliexpress.com/item/32802382507.html)
 - 2.54mm female pin [headers](https://www.aliexpress.com/item/4001122376295.html)
+- 5pin [headers](https://www.aliexpress.com/item/1005005742644313.html) - source of pins for socketing, and also a connector for nice!view
 
 ### Mechanical
 
@@ -49,7 +50,6 @@ Features:
 
 - Battery up to 602040 size - this is what I'm using, should be enough but you may try to go bigger (check that there's enough space inside using 3D project)
 - _[Optional]_ Vertical 2pin 2.54mm JST [connector](https://www.aliexpress.com/item/1005004938361514.html) for battery
-- 5pin [headers](https://www.aliexpress.com/item/1005005742644313.html) - source of pins for socketing, and also a connector for nice!view
 
 ## PCBA
 
