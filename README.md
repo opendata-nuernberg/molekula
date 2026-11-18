@@ -1,54 +1,26 @@
-# molekula: keyboard & framework
+# Molekula · 38 Tasten
 
-## modular framework
+Molekula ist eine teilbare ergonomische Tastatur mit 19 Tasten pro Seite, einem minY-Raster von 19 × 16 mm und einem RP2040 Helios 16M. Dieser Fork von Molekula2 ergänzt je eine Position in der oberen Fingerreihe. Die beiden äußeren Tasten bleiben erhalten. Ein Encoder und der Anschluss für ein nice!view sind auf der Zentralplatine vorgesehen.
 
-This project aims to provide components for building modular ergo keyboards by separating one main PCB into central and side parts. **Side** is a dumb PCB, with key matrix only (up to 25 keys), and accepts all switch types (MX/ChocV1/ChocV2/GLP). **Central** is a keyboard brain, which contains any MCU (wired/wireless/integrated) and additional hardware - encoders/touchpads/trackballs/displays/etc, while keeping its size under 100x100mm. PCBs are interconnected with 12-pin FFC cables, and can be replaced/updated independently.
+| Ordner | Inhalt |
+| --- | --- |
+| [pcb/](pcb/) | KiCad-Projekt, Schaltplan, Platine und Bibliothekstabellen für den 38-Tasten-Fork |
+| [production/](production/) | Gerber- und Bohrdaten als Fertigungspaket sowie BOM und Platzierungsdaten für die SMD-Bestückung |
+| [case/](case/) | Vorhandene 38-Tasten-Druckprojekte für Choc auf Artisan und P1S |
+| [keycaps/](keycaps/) | Sculpted-Choc-Kappen und separates Daumenmodell |
 
-Such modular approach allows for quick, cheap and easy experimenting with different hardware, prototyping, and reusing of side PCBs.
+## Platine und Fertigung
 
-### PCB examples
+Öffne [`pcb/pcb.kicad_pro`](pcb/pcb.kicad_pro) in KiCad 9. Für Bibliothekszugriff und die referenzierten 3D-Modelle muss `ZZKEEB` auf eine lokale Bibliothek mit `zzkeeb.pretty`, `zzkeeb.kicad_sym` und `models/` zeigen. Die Bibliothek liegt außerhalb dieses Repos.
 
-- central with pro-micro/nice!nano footprint, nice!view and rotary encoder
+Das [Fertigungspaket](production/pcb.zip) enthält die Paneldaten für beide Tastenplatinen, die Zentralplatine und zwei Magnetverbinderplatinen. Die fünf Platinen werden für die Montage getrennt. [BOM](production/bom.csv) und [Positionen](production/positions.csv) liegen zusätzlich als CSV vor. Die BOM deckt die SMD-Bestückung mit Dioden und FFC-Buchsen ab. Schalter, Hotswap-Sockel, MCU und Gehäuseteile sind separat zu beschaffen. Bei Änderungen am KiCad-Projekt die Fertigungsdaten gemeinsam aktualisieren.
 
-<img src="./pcbs/central-promicro-encoder/render.png" height="400" />
+## Gehäuse und Firmware
 
-- side with 18 keys and minY spacing (19x16mm)
+Die [Artisan](case/keyboard_artisan.3mf)- und [P1S](case/keyboard_p1s.3mf)-Projekte enthalten Gehäuse-Oberteile mit 19 Schalteröffnungen je Seite. Die [mechanische Referenz](DESIGN.md) beschreibt, wie aus dem Fork-Board das schlankere FluidCAD-Gehäuse abgeleitet und geprüft werden kann.
 
-<img src="./pcbs/side36-minY/render.png" height="400" />
+Ein Firmware-Build für Helios und die 38er-Matrix ist in diesem Repo nicht enthalten. Vor dem Flashen müssen Controller, Pinbelegung und beide zusätzlichen Positionen mit dem [Schaltplan](pcb/pcb.kicad_sch) abgeglichen sein.
 
-## Molekula2 keyboard
+## Herkunft
 
-Reference design using molekula PCBs.
-
-Features:
-
-- minY (19x16mm) spacing
-- unibody that can be disassembled into two parts for traveling
-- 36 keys
-- wireless
-- nice!view support
-- rotary encoder
-
-[More info and build guide](./keyboards/Molekula2/README.md)
-
-### Photos
-
-<img src="./keyboards/Molekula2/images/top-1.jpg" height="400" />
-
-<img src="./keyboards/Molekula2/images/top-2.jpg" height="400" />
-
-<img src="./keyboards/Molekula2/images/side.jpg" height="400" />
-
-<img src="./keyboards/Molekula2/images/bottom.jpg" height="400" />
-
-### Support
-
-If you like my work and want to support my future designs, please consider [sponsorship](https://github.com/sponsors/zzeneg).
-
-### Sponsors
-
-Molekula2 keyboard was sponsored by PCBWay. I can highly recommend their PCBA and 3D printing services - "Imaging Black" resin looks fantastic.
-
-<a href="https://pcbway.com" target="_blank">![image](https://github.com/user-attachments/assets/afe00c07-a6ee-4589-b40c-1ee1c76488e4)</a>
-
-<a href="https://shop.beekeeb.com" target="_blank"><img src="https://beekeeb.com/beekeeb-logo.png" width="200" ></a>
+Dieses Projekt basiert auf [Molekula von Evgenii Vilkov (zzeneg)](https://github.com/zzeneg/molekula). Es steht unter der [MIT-Lizenz](LICENSE). Die früheren Gehäuse-, Bild- und Vergleichsdateien sind in der Git-Historie unter dem Ausgangsstand `78ca099` auffindbar.
