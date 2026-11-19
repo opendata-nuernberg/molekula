@@ -3,6 +3,7 @@ import { envelopes } from './envelopes.js';
 import { layoutParams, modelPlacement, place, placement } from './layout.js';
 import { closed, rectangle } from './outline.js';
 import { boardThickness, components as parts, switches } from './pcb-reference.js';
+import { ENCODER, MEASURED } from './shell.js';
 
 // Populated components of the keyboard, for interference checks.
 //
@@ -17,11 +18,10 @@ import { boardThickness, components as parts, switches } from './pcb-reference.j
 const SOCKET_TOP_IN_MODEL = 2.0;
 const TRAVEL = 3.0;
 
-// Component -> [envelope/import, model file in the footprint].
+// Component -> [envelope/import, model file in the footprint]. Helios and encoder are built
+// from measured heights instead (measuredBodies), in both modes.
 const COMPONENTS = {
-  J13: ['helios', 'splinky-headers.step'],
   SW37: ['reset', 'Button_SW_SPST_SKQG_WithoutStem.STEP'],
-  SW38: ['encoder', 'EC11-THT-15F-black.step'],
   J2: ['ffc', 'FPC-12.stp'],
   J3: ['ffc', 'FPC-12.stp'],
   J4: ['ffc', 'FPC-12.stp'],
@@ -53,6 +53,36 @@ function steppedBodies(name, dz, places) {
     color(COLORS[name], body);
     return body;
   });
+}
+
+/**
+ * Helios and encoder of the middle board from the heights measured on the built keyboard
+ * (MEASURED in shell.js). Frame of the board: both sit on the KiCad bottom side (z < 0),
+ * which faces up once the board is mounted upside down.
+ */
+function measuredBodies() {
+  const box = (name, center, w, h, z0, z1, col) => {
+    const sk = sketch(plane('xy', { offset: -z1 }), () => closed(rectangle(center, w, h, 0))).name(`${name} · sketch`);
+    const body = extrude(z1 - z0, sk).new().name(name);
+    color(col, body);
+    return body;
+  };
+  const cylinder = (name, center, d, z0, z1, col) => {
+    const sk = sketch(plane('xy', { offset: -z1 }), () => circle(center, d)).name(`${name} · sketch`);
+    const body = extrude(z1 - z0, sk).new().name(name);
+    color(col, body);
+    return body;
+  };
+  const helios = parts.find(t => t.ref === 'J13');
+  const enc = parts.find(t => t.ref === 'SW38');
+  // Helios footprint incl. the receptacle overhang at the board edge (from the KiCad model).
+  const hy = [helios.center[1] + 13.9 - 29.15, helios.center[1] + 13.9 + 4.65];
+  return [
+    box('J13 · Helios (measured)', [helios.center[0], (hy[0] + hy[1]) / 2], 17.8, hy[1] - hy[0], 0.05, MEASURED.usbTop, COLORS.helios),
+    box('SW38 · encoder body (measured)', enc.center, ENCODER.body, ENCODER.body, 0.05, MEASURED.encoderBody, COLORS.encoder),
+    cylinder('SW38 · encoder bushing', enc.center, ENCODER.bushing, MEASURED.encoderBody, MEASURED.encoderBushing, COLORS.encoder),
+    cylinder('SW38 · encoder shaft (measured tip)', enc.center, ENCODER.shaft, MEASURED.encoderBushing, MEASURED.encoderTip, COLORS.encoder),
+  ];
 }
 
 export const components = part('Molekula · Components', () => {
@@ -94,6 +124,8 @@ export const components = part('Molekula · Components', () => {
     place(modelPlacement(c, m), ...bodies);
     perRegion[c.board].push(...bodies);
   }
+
+  perRegion.middle.push(...measuredBodies());
 
   for (const [region, bodies] of Object.entries(perRegion)) place(placement(region, p), ...bodies);
 });

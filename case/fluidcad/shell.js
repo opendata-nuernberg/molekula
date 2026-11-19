@@ -1,5 +1,5 @@
 import { circle, extrude, offset, param, plane, sketch } from 'fluidcad/core';
-import { boards } from './pcb-reference.js';
+import { boardThickness, boards, components } from './pcb-reference.js';
 import { boardHeight, halfTilt } from './layout.js';
 import { closed, rectangle, trace } from './outline.js';
 
@@ -24,9 +24,34 @@ export function shellParams() {
     plateGap: param('Gap between top plate and wall (mm)', 0.2, 'number', { min: 0, max: 0.6, step: 0.05 }),
     switchCutout: param('Switch cut-out in the top plate (mm)', 14.0, 'number', { min: 13.8, max: 14.4, step: 0.05 }),
     overlap: param('Middle cover overlap onto the plates (mm)', 4, 'number', { min: 2, max: 8, step: 0.5 }),
-    coverHeight: param('Middle cover height above the PCB (mm)', 9.5, 'number', { min: 4, max: 20, step: 0.1 }),
-    coverThickness: param('Cover thickness (mm)', 1.6, 'number', { min: 1, max: 3, step: 0.1 }),
+    coverHeight: param('Middle cover height above the PCB (mm)', 7.0, 'number', { min: 4, max: 20, step: 0.1 }),
+    coverThickness: param('Cover thickness (mm)', 1.4, 'number', { min: 1, max: 3, step: 0.1 }),
   };
+}
+
+/**
+ * Heights measured on the first built keyboard, above the upper side of the upside-down middle
+ * board. They replace the KiCad 3D models where those differ from the real assembly: the
+ * Helios is soldered almost flat onto the board with its parts facing up (the model puts it
+ * on 7.8 mm headers, upside down), and the encoder body is taller than in the model.
+ * encoderBushing is not measured: EC11 bushings are about 5 mm long.
+ */
+export const MEASURED = { usbTop: 4.5, usbHeight: 3.16, encoderBody: 7.0, encoderBushing: 12.0, encoderTip: 15.6 };
+
+/** EC11 body footprint (square) and shaft diameters. */
+export const ENCODER = { body: 12.3, bushing: 7, shaft: 6 };
+
+/**
+ * Opening for the USB-C plug, centred on the Helios receptacle, in the frame of the middle
+ * (KiCad X mirrored, z = 0 board bottom). The plug sits low, so the opening reaches a little
+ * below the top of the board into the bottom shell. y0: the opening runs from y0 outward.
+ */
+export function usbOpening() {
+  const helios = components.find(b => b.ref === 'J13');
+  const model = helios.models.find(m => m.file === 'splinky-headers.step');
+  const plug = { width: 12.5, height: 6.5 };
+  const z = boardThickness + MEASURED.usbTop - MEASURED.usbHeight / 2;
+  return { x: -helios.center[0], y0: helios.center[1] + model.offset[1] + 1.616, width: plug.width, z0: z - plug.height / 2, z1: z + plug.height / 2 };
 }
 
 /**

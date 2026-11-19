@@ -2,7 +2,7 @@ import { color, part } from 'fluidcad/core';
 import { envelopes } from './envelopes.js';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { RIBS, bridge, circleBodies, edgeRect, outlineBody, rectBodies, shellParams, worldBox } from './shell.js';
+import { RIBS, bridge, circleBodies, edgeRect, outlineBody, rectBodies, shellParams, usbOpening, worldBox } from './shell.js';
 
 // Bottom shell of the keyboard without magnetic connectors: one piece for both halves and
 // the middle. The parting surface to the top shell is the top of each board.
@@ -111,6 +111,10 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
   rectBodies('middle', p,
     [{ center: [0, (HELIOS_PINS.y[0] + HELIOS_PINS.y[1]) / 2], width: 2 * HELIOS_PINS.x, height: HELIOS_PINS.y[1] - HELIOS_PINS.y[0] }],
     -p.underSpace, 0.01, 'Middle · Helios header relief', { remove: [middle] });
+  // The USB-C plug reaches a little below the top of the board: notch in the wall.
+  const usb = usbOpening();
+  rectBodies('middle', p, [{ center: [usb.x, usb.y0 + 10], width: usb.width, height: 20 }],
+    usb.z0, PT + 1, 'Middle · USB-C notch', { remove: [middle] });
   const screws = holes.filter(b => b.board === 'middle').map(b => [-b.center[0], b.center[1]]);
   const reset = components.find(b => b.ref === 'SW37');
   circleBodies('middle', p, screws, SCREW.boss, -p.underSpace, 0, 'Middle · screw boss', { add: [middle] });

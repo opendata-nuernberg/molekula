@@ -1,7 +1,7 @@
 import { color, part } from 'fluidcad/core';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { circleBodies, outlineBody, rectBodies, shellParams } from './shell.js';
+import { ENCODER, circleBodies, outlineBody, rectBodies, shellParams, usbOpening } from './shell.js';
 
 // Top shell of the keyboard without magnetic connectors, in three print parts. Each has one
 // flat top face, so it prints upside down on that face without supports.
@@ -12,18 +12,15 @@ import { circleBodies, outlineBody, rectBodies, shellParams } from './shell.js';
 //   clips catch under it, as on a normal Choc plate. Crush ribs in the pocket (RIBS in
 //   shell.js), the switches and the middle cover hold it. No screws.
 // - Middle cover: closed cover over Helios, FFC sockets and cables with a hole for the
-//   encoder bushing and a cut-out for the USB-C plug. Its flat top reaches over the cable
+//   encoder body and a cut-out for the USB-C plug. Its flat top reaches over the cable
 //   gap onto the inner edges of both plates and clamps them. Three M2 screws
 //   from below through the bottom shell and H5–H7 go into heat-set inserts in its bosses.
 //
 // Assembly: boards and cables into the bottom shell, the plates pressed into their pockets,
 // the middle cover on top, screws from below, then the switches.
 
-// Encoder EC11: threaded bushing Ø 7 mm.
-const ENCODER_BUSHING = 7;
-const ENCODER_CLEARANCE = 0.4;
-// USB-C plug with overmould, centred on the Helios receptacle.
-const USB = { width: 12.5, height: 7, receptacleY: [1.616, 4.644], receptacleZ: [0.111, 3.272] };
+// Clearance around the encoder body, which reaches up to the top of the cover.
+const ENCODER_CLEARANCE = 0.35;
 // Cutting bodies at the parting surface are slightly larger than the outer wall of the half:
 // coincident side faces otherwise make the cut fail silently in OpenCascade.
 const OVERLAP = 0.05;
@@ -38,7 +35,8 @@ const CLIPS = { layer: 1.2, relief: [15.0, 14.0] };
 // Gap between the middle cover and the pocket wall of the bottom shell next to it.
 const PLATE_GAP = 0.2;
 // Heat-set inserts M2 in the middle cover: hole for the insert, then room for the screw tip.
-const INSERT = { boss: 6, hole: 3.2, depth: 4.5, tip: 2.0, tipDepth: 6.5 };
+// The hole for the screw tip stops `tipCover` below the top of the cover.
+const INSERT = { boss: 6, hole: 3.2, depth: 4.5, tip: 2.0, tipCover: 1.2 };
 // Bridge between middle and half: y range like the bottom-shell bridge (shell.js).
 const BRIDGE_Y = (s) => [-(63 + s.clearance + s.wall) + 0.1, -(8 - s.clearance - s.wall) - 0.1];
 
@@ -96,18 +94,14 @@ export const topShell = part('Molekula · Top shell', () => {
   // Middle, in the frame of the upside-down board (KiCad X mirrored).
   outlineBody('middle', p, s.clearance, PT - 1, PT + s.coverHeight - s.coverThickness, 'Middle · space under the cover', { remove: [middle] });
   const enc = components.find(b => b.ref === 'SW38');
-  circleBodies('middle', p, [[-enc.center[0], enc.center[1]]], ENCODER_BUSHING + 2 * ENCODER_CLEARANCE, PT, PT + s.coverHeight + 1, 'Middle · encoder bushing', { remove: [middle] });
-  // Helios on the KiCad top side with headers, model offset z -7.8; after flipping the board
-  // the receptacle sits above it. z' = PT - z.
-  const helios = components.find(b => b.ref === 'J13');
-  const hm = helios.models.find(m => m.file === 'splinky-headers.step');
-  const receptacleY = USB.receptacleY.map(y => helios.center[1] + hm.offset[1] + y);
-  const receptacleZ = USB.receptacleZ.map(z => PT - (PT + hm.offset[2] + z));
-  const zUsb = (receptacleZ[0] + receptacleZ[1]) / 2;
-  rectBodies('middle', p,
-    [{ center: [-helios.center[0], receptacleY[0] + 10], width: USB.width, height: 20 }],
-    zUsb - USB.height / 2, zUsb + USB.height / 2, 'Middle · USB-C', { remove: [middle] });
+  const encBody = ENCODER.body + 2 * ENCODER_CLEARANCE;
+  rectBodies('middle', p, [{ center: [-enc.center[0], enc.center[1]], width: encBody, height: encBody }],
+    PT, PT + s.coverHeight + 1, 'Middle · encoder body', { remove: [middle] });
+  const usb = usbOpening();
+  rectBodies('middle', p, [{ center: [usb.x, usb.y0 + 10], width: usb.width, height: 20 }],
+    usb.z0, usb.z1, 'Middle · USB-C', { remove: [middle] });
   // The Helios board reaches the cover wall at its upper edge: relieve the wall there.
+  const helios = components.find(b => b.ref === 'J13');
   rectBodies('middle', p,
     [{ center: [-helios.center[0], 0], width: 2 * HELIOS_EDGE.x, height: 2 * HELIOS_EDGE.y }],
     PT - 1, PT + s.coverHeight - s.coverThickness, 'Middle · Helios relief at the wall', { remove: [middle] });
@@ -116,7 +110,7 @@ export const topShell = part('Molekula · Top shell', () => {
   const screws = holes.filter(b => b.board === 'middle').map(b => [-b.center[0], b.center[1]]);
   circleBodies('middle', p, screws, INSERT.boss, PT, PT + s.coverHeight - s.coverThickness + 0.1, 'Middle · insert boss', { add: [middle] });
   circleBodies('middle', p, screws, INSERT.hole, PT - 1, PT + INSERT.depth, 'Middle · insert hole', { remove: [middle] });
-  circleBodies('middle', p, screws, INSERT.tip, PT - 1, PT + INSERT.tipDepth, 'Middle · screw tip', { remove: [middle] });
+  circleBodies('middle', p, screws, INSERT.tip, PT - 1, PT + s.coverHeight - INSERT.tipCover, 'Middle · screw tip', { remove: [middle] });
 
   color('#6b7380', left, right, middle);
 });
