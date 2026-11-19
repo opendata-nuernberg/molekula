@@ -2,24 +2,28 @@ import { color, part } from 'fluidcad/core';
 import { envelopes } from './envelopes.js';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { bridge, circleBodies, outlineBody, rectBodies, shellParams, worldBox } from './shell.js';
+import { HOOK, bridge, circleBodies, hookRect, outlineBody, rectBodies, shellParams, worldBox } from './shell.js';
 
 // Bottom shell of the keyboard without magnetic connectors: one piece for both halves and
 // the middle. The parting surface to the top shell is the top of each board.
 //
-// - Halves: rest with their edge on a surrounding ledge and are clamped by the top shell
-//   (no mounting holes). With tenting (inside up, outside down) a wedge grows underneath
+// - Halves: rest with their edge on a surrounding ledge and are clamped by the top plates
+//   (the key boards have no mounting holes). With tenting (inside up, outside down) a wedge grows underneath
 //   down to the desk. It is modelled solid: a closed cavity would have a shallow sloped
 //   ceiling that cannot be printed without enclosed supports. The slicer's infill keeps
 //   the wedge light.
-// - Middle: mounted upside down, with M2 screws from below into H5–H7 and a hole for the
-//   reset button. With tenting it stands on a pedestal; screw heads and reset access then
-//   reach up from the desk side as holes.
+// - Middle: mounted upside down. Three M2 screws from below go through H5–H7 into heat-set
+//   inserts in the middle cover and hold bottom shell, board and cover together. With
+//   tenting the middle stands on a pedestal; access holes for a screwdriver and for the
+//   reset button reach up from the desk side.
+// - Hooks: at three outer edges of each half a bulge with a hood, under which the tongue of
+//   the top plate slides (see HOOK in shell.js).
 // - Cable pass: at each inner edge a channel for the FFC cable from J4/J5 to the middle.
 // - Reliefs: where hotswap sockets or the Helios header pins reach over the ledge, it is
 //   cut back.
 
-const SCREW = { hole: 2.4, head: 4.4, headDepth: 2.0, boss: 6 };
+// access: hole from the desk up to the floor, wide enough for a screwdriver shaft of 10 mm.
+const SCREW = { hole: 2.4, head: 4.4, headDepth: 2.0, boss: 6, access: 11 };
 const RESET_HOLE = 3.0;
 // Cutting bodies at the parting surface are slightly larger than the outer wall of the half:
 // coincident side faces otherwise make the cut fail silently in OpenCascade.
@@ -58,6 +62,11 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
   const middle = outlineBody('middle', p, s.clearance + s.wall, -zh, PT, 'Middle · outside');
   for (const side of [-1, 1]) bridge(side, p, s, 0, zh + PT, `Bridge ${side < 0 ? 'left' : 'right'}`, { add: [middle] });
   const all = [left, right, middle];
+  for (const [region, half, R] of [['left', left, 'Left'], ['right', right, 'Right']]) {
+    rectBodies(region, p,
+      HOOK.places[region].map(h => hookRect(region, h, s.clearance, s.clearance + s.wall + HOOK.bulge, HOOK.hood)),
+      bottom - depth, PT + s.plate, `${R} · hook bulge`, { add: [half] });
+  }
   if (depth > 0) {
     worldBox(p, -300, 0, 'Below the desk', { remove: [left, right] });
     for (const [half, side, R] of [[left, -1, 'Left'], [right, 1, 'Right']]) {
@@ -94,6 +103,9 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
         };
       }),
       -p.underSpace, 0.01, `${R} · socket relief`, { remove: [half] });
+    rectBodies(region, p,
+      HOOK.places[region].map(h => hookRect(region, h, s.clearance - 0.5, HOOK.reach + HOOK.gap, HOOK.width + 2 * HOOK.gap)),
+      PT, PT + HOOK.thickness + HOOK.gap, `${R} · hook slot`, { remove: [half] });
   }
 
   // Middle, in the frame of the upside-down board: KiCad X is mirrored.
@@ -105,8 +117,10 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
   const screws = holes.filter(b => b.board === 'middle').map(b => [-b.center[0], b.center[1]]);
   const reset = components.find(b => b.ref === 'SW37');
   circleBodies('middle', p, screws, SCREW.boss, -p.underSpace, 0, 'Middle · screw boss', { add: [middle] });
-  // From the desk side: with tenting the screw heads sit deep in the pedestal, so the
-  // counterbore reaches from the desk up to just below the floor of the middle.
+  // From the desk side: with tenting the screw heads sit deep in the pedestal. An access hole
+  // for the screwdriver reaches from the desk up to the floor of the middle, the head sinks
+  // into the floor and the screw boss.
+  circleBodies('middle', p, screws, SCREW.access, -zh - 1, bottom, 'Middle · screwdriver access', { remove: all });
   circleBodies('middle', p, screws, SCREW.hole, -zh - 1, 1, 'Middle · screw hole', { remove: all });
   circleBodies('middle', p, screws, SCREW.head, -zh - 1, bottom + SCREW.headDepth, 'Middle · screw head', { remove: all });
   circleBodies('middle', p, [[-reset.center[0], reset.center[1]]], RESET_HOLE, -zh - 1, 1, 'Middle · reset access', { remove: all });

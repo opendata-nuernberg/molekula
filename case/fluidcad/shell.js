@@ -20,10 +20,9 @@ export function shellParams() {
     wall: param('Wall thickness (mm)', 1.8, 'number', { min: 1.2, max: 3, step: 0.1 }),
     clearance: param('PCB clearance per side (mm)', 0.6, 'number', { min: 0.2, max: 1.5, step: 0.1 }),
     ledge: param('Ledge under the PCB edge (mm)', 1.0, 'number', { min: 0.5, max: 3, step: 0.1 }),
-    rimHeight: param('Rim height above the PCB (mm)', 4, 'number', { min: 1, max: 12, step: 0.1 }),
-    clampOverlap: param('Clamp overlap over the PCB (mm)', 0.8, 'number', { min: 0, max: 3, step: 0.1 }),
-    lip: param('Clamp lip thickness (mm)', 0.8, 'number', { min: 0.4, max: 2, step: 0.1 }),
-    keycapClearance: param('Clearance around keycaps (mm)', 0.75, 'number', { min: 0.3, max: 2, step: 0.05 }),
+    plate: param('Top plate thickness (mm)', 2.2, 'number', { min: 1.5, max: 3, step: 0.1 }),
+    switchCutout: param('Switch cut-out in the top plate (mm)', 14.0, 'number', { min: 13.8, max: 14.4, step: 0.05 }),
+    overlap: param('Middle cover overlap onto the plates (mm)', 4, 'number', { min: 2, max: 8, step: 0.5 }),
     coverHeight: param('Middle cover height above the PCB (mm)', 9.5, 'number', { min: 4, max: 20, step: 0.1 }),
     coverThickness: param('Cover thickness (mm)', 1.6, 'number', { min: 1, max: 3, step: 0.1 }),
   };
@@ -110,6 +109,39 @@ export function circleBodies(region, p, centers, d, z0, z1, name, mode = null) {
     }).name(`${name} ${i + 1} · sketch`);
     return apply(extrude(z1 - z0, s), mode).name(centers.length > 1 ? `${name} ${i + 1}` : name);
   });
+}
+
+/**
+ * Hooks that hold the outer edge of the top plates: the plate has a tongue at its underside
+ * that slides outward under a hood of the bottom shell. Each hook sits on a straight outer
+ * edge of its board (KiCad frame; the boards are not exact mirror images): edgeX is the
+ * board edge, y the centre along the edge. All edges face outward in X, so the plate engages all
+ * hooks by sliding outward; the middle cover then blocks it from sliding back.
+ *
+ * Across the edge, d counts outward from the board edge. The bottom shell gets a bulge
+ * (d up to wall + bulge) whose top part is the hood; the plate is notched there and keeps
+ * only the tongue, which reaches under the hood up to d = reach.
+ */
+export const HOOK = {
+  places: {
+    left: [{ edgeX: -138.5, y: -34 }, { edgeX: -119.5, y: -19 }, { edgeX: -119, y: -49 }],
+    right: [{ edgeX: 138, y: -34 }, { edgeX: 119, y: -19 }, { edgeX: 119, y: -49 }],
+  },
+  width: 6, // tongue width along the edge
+  hood: 10, // hood width along the edge
+  thickness: 1.0, // tongue thickness, from the board top
+  reach: 2.4, // tongue tip, d from the board edge
+  gap: 0.2, // clearance around the tongue and the hood
+  bulge: 2.0, // bulge of the bottom shell beyond its outer wall
+};
+
+/**
+ * Rectangle across a hook: d from d0 to d1 outward from the board edge, t from -w/2 to w/2
+ * along the edge, in the frame of the region ('left' or 'right').
+ */
+export function hookRect(region, place, d0, d1, w) {
+  const out = region === 'left' ? -1 : 1;
+  return { center: [place.edgeX + (out * (d0 + d1)) / 2, place.y], width: d1 - d0, height: w };
 }
 
 /**
