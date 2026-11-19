@@ -1,0 +1,1706 @@
+[
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#868686"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#98a4dc"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 31,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 32,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 33,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 34,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 35,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 36,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 37,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 38,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 39,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 40,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 41,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 42,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 43,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 44,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 45,
+        "color": "#050505"
+      },
+      {
+        "faceIndex": 46,
+        "color": "#050505"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 31,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 32,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 33,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 34,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 35,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 36,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 37,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 38,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 39,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 40,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 41,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 42,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 43,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 44,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 45,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 46,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 47,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 48,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 49,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 50,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 51,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 52,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 53,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 54,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 55,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 56,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 57,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 58,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 59,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 60,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 61,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 62,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 63,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 64,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 65,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 66,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 67,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 68,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 69,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 70,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 71,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 72,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 73,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 74,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 75,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 76,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 77,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 78,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 79,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 80,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 81,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 82,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 83,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 84,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 85,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 86,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 87,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 88,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 89,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 90,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 91,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 92,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 93,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 94,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 95,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 96,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 97,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 98,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 99,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 100,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 101,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 102,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 103,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 104,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 105,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 106,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 107,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 108,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 109,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 110,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 111,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 112,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 113,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 114,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 115,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 116,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 117,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 118,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 119,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 120,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 121,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 122,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 123,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 124,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 125,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 126,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 127,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 128,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 129,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 130,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 131,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 132,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 133,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 134,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 135,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 136,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 137,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 138,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 139,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 140,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 141,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 142,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 143,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 144,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 145,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 146,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 147,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 148,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 149,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 150,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 151,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 152,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 153,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 154,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 155,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 156,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 157,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 158,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 159,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 160,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 161,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 162,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 163,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 164,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 165,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 166,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 167,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 168,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 169,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 170,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 171,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 172,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 173,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 174,
+        "color": "#98a4dc"
+      },
+      {
+        "faceIndex": 175,
+        "color": "#98a4dc"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 31,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 32,
+        "color": "#868686"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#868686"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#868686"
+      }
+    ]
+  },
+  {
+    "faces": [
+      {
+        "faceIndex": 0,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 1,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 2,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 3,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 4,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 5,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 6,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 7,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 8,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 9,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 10,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 11,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 12,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 13,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 14,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 15,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 16,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 17,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 18,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 19,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 20,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 21,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 22,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 23,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 24,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 25,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 26,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 27,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 28,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 29,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 30,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 31,
+        "color": "#868686"
+      },
+      {
+        "faceIndex": 32,
+        "color": "#868686"
+      }
+    ]
+  }
+]
