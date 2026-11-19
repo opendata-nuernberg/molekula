@@ -7,19 +7,23 @@ import { unterschale } from './unterschale.part.js';
 // Molekula ohne Magnetverbinder: ein durchgehendes Gehäuse aus Ober- und Unterschale,
 // MCU und Encoder in der Mitte, Tenting der Hälften fest eingedruckt.
 //
+// Tenting wird über die Keildicke in der Mitte eingestellt: so viel liegen Mitte und
+// Innenkanten höher als bei der flachen Tastatur, die Außenkanten stehen auf dem Tisch.
+// Der Winkel folgt daraus (15 mm ≈ 6,8°), gekippt wird nur von außen nach innen.
+//
 // Die Konfigurationen sind Startpunkte zum Ausprobieren. Im Panel „Assembly Parameters“
 // lassen sich die Werte frei ändern und als neue Konfiguration speichern.
 export const tastatur = assembly('Molekula · Tastatur', () => {
   configurations({
-    Flach: { 'Tenting (°)': 0 },
-    'Tenting 5°': { 'Tenting (°)': 5 },
-    'Tenting 10°': { 'Tenting (°)': 10 },
-    'Tenting 15°': { 'Tenting (°)': 15 },
-    'Tenting 20°': { 'Tenting (°)': 20 },
-    'Prüfung – Tenting 20°, Tasten gedrückt': { 'Tenting (°)': 20, 'Tasten gedrückt': true },
+    Flach: { 'Keildicke Mitte (mm)': 0 },
+    'Keil 10 mm': { 'Keildicke Mitte (mm)': 10 },
+    'Keil 15 mm': { 'Keildicke Mitte (mm)': 15 },
+    'Keil 20 mm': { 'Keildicke Mitte (mm)': 20 },
+    'Keil 25 mm': { 'Keildicke Mitte (mm)': 25 },
+    'Prüfung – Keil 25 mm, Tasten gedrückt': { 'Keildicke Mitte (mm)': 25, 'Tasten gedrückt': true },
   });
   const werte = {
-    'Tenting (°)': param('Tenting (°)', 0, 'number', { min: 0, max: 35, step: 1 }),
+    'Keildicke Mitte (mm)': param('Keildicke Mitte (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
     'Kippachse innen (mm)': param('Kippachse innen (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
     'Kabelspalt (mm)': param('Kabelspalt (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
     'Bodenstärke (mm)': param('Bodenstärke (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),

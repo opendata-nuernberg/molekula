@@ -11,9 +11,12 @@ import { platinenstaerke, teile } from './pcb-referenz.js';
 //
 // - Mitte: umgedreht eingebaut (KiCad-B-Seite oben), damit Encoder und Helios oben liegen.
 // - Hälften: um Kabelspalt nach außen gerückt und um eine Achse parallel zur
-//   Innenkante gekippt (Tenting): die Innenkanten oben, die Außenseiten unten, wie ein
-//   Dach. Alles wird so weit angehoben, dass die Außenkanten auf dem Tisch stehen; die
-//   Mitte sitzt flach auf Höhe der Innenkanten.
+//   Innenkante gekippt (Tenting nur von außen nach innen, nicht von vorn nach hinten):
+//   die Innenkanten oben, die Außenseiten unten, wie ein Dach. Eingestellt wird die
+//   Keildicke in der Mitte, also wie weit Innenkanten und Mitte gegenüber der flachen
+//   Tastatur angehoben sind. Der Winkel ergibt sich daraus so, dass die Außenkanten
+//   gerade auf dem Tisch stehen (Keildicke dort 0). Die Mitte sitzt flach auf Höhe der
+//   Innenkanten.
 
 /** Innenkante der Hälften in KiCad-X (±). */
 export const INNENKANTE_X = 14.5;
@@ -23,32 +26,53 @@ export const INNENKANTE_X = 14.5;
  * Regler haben. Die Assembly reicht ihre Werte per insert(teil, { … }) durch.
  */
 export function layoutParameter() {
-  return {
-    tenting: param('Tenting (°)', 0, 'number', { min: 0, max: 35, step: 1 }),
+  const p = {
+    keil: param('Keildicke Mitte (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
     kippachse: param('Kippachse innen (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
     kabelspalt: param('Kabelspalt (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
     boden: param('Bodenstärke (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),
     unterraum: param('Raum unter den Platinen (mm)', 2.5, 'number', { min: 2, max: 6, step: 0.1 }),
   };
+  p.tenting = tentingWinkel(p);
+  return p;
 }
 
 // Außenwand und Spiel der Schalen für die Berechnung der Anhebung (Entwurfswerte aus
 // schale.js; ein etwas größerer Wert schadet nicht, der Keil wird am Tisch beschnitten).
 const RAND_AUSSEN = 2.5;
 
-/**
- * Anhebung beim Tenting: so viel, dass die Unterseite der Hälften an ihrer äußersten Stelle
- * gerade den Tisch erreicht.
- */
-export function anhebung(p) {
-  if (!(p.tenting > 0)) return 0;
-  const w = (p.tenting * Math.PI) / 180;
-  const zh0 = p.boden + p.unterraum;
-  const { ax, verschiebung } = haelftenKippung('links', p);
+/** Waagrechter Abstand von der Kippachse bis zur Außenkante der Unterschale (ungekippt). */
+function auslage(p) {
+  const ax = INNENKANTE_X + p.kabelspalt - p.kippachse;
   const t = teile.links;
   const xs = [t.start, ...t.schritte].flatMap(s => (s.length === 4 ? [s[0], s[2]] : [s[0]]));
-  const dmax = Math.max(...xs.map(x => Math.abs(x + verschiebung - ax))) + RAND_AUSSEN;
-  return Math.max(0, dmax * Math.sin(w) - zh0 * (1 - Math.cos(w)));
+  return Math.max(...xs.map(x => Math.abs(x - p.kabelspalt + ax))) + RAND_AUSSEN;
+}
+
+/** Anhebung von Mitte und Kippachse bei Winkel w (Bogenmaß), Außenkante auf dem Tisch. */
+function anhebungBei(w, p) {
+  return Math.max(0, auslage(p) * Math.sin(w) - (p.boden + p.unterraum) * (1 - Math.cos(w)));
+}
+
+/**
+ * Tenting-Winkel (°), bei dem Mitte und Innenkanten um die Keildicke höher liegen als bei
+ * der flachen Tastatur und die Außenkanten den Tisch gerade berühren.
+ */
+export function tentingWinkel(p) {
+  if (!(p.keil > 0)) return 0;
+  let [lo, hi] = [0, Math.PI / 3];
+  for (let i = 0; i < 60; i++) {
+    const m = (lo + hi) / 2;
+    if (anhebungBei(m, p) < p.keil) lo = m;
+    else hi = m;
+  }
+  return (((lo + hi) / 2) * 180) / Math.PI;
+}
+
+/** Anhebung beim Tenting: entspricht der Keildicke in der Mitte. */
+export function anhebung(p) {
+  if (!(p.tenting > 0)) return 0;
+  return anhebungBei((p.tenting * Math.PI) / 180, p);
 }
 
 /** Höhe der Platinenunterseite über dem Tisch (Mitte und Kippachse der Hälften). */
