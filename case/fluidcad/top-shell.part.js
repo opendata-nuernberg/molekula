@@ -1,4 +1,4 @@
-import { color, part } from 'fluidcad/core';
+import { color, param, part } from 'fluidcad/core';
 import { INNER_EDGE_X, boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
 import { ENCODER, bridgeY, circleBodies, gapCorners, outlineBody, reachIntoMiddle, rectBodies, shellParams, usbOpening } from './shell.js';
@@ -34,6 +34,27 @@ const HELIOS_EDGE = { x: 9.5, y: 1.4 };
 const CLIPS = { layer: 1.2, relief: [15.0, 14.0] };
 // Gap between the middle cover and the pocket wall of the bottom shell next to it.
 const PLATE_GAP = 0.2;
+// Guardian motif on the top of the middle cover: three hexagonal eyes as colour inlays (one
+// filament each, the cover in the base colour) and recessed lines. Coordinates in the frame
+// of the middle (world XY). radius: corner radius of the inlay (pointy top); groove: width of
+// the recessed outline around each eye; dot: the open centre in which the cover colour shows;
+// depth: inlays and lines, three layers of 0.2 mm. The cover prints upside down on its top
+// face, so all colours sit in its first layers.
+const MOTIF = {
+  eyes: [
+    { name: 'blue', color: '#3aa7e6', at: [0, -16] },
+    { name: 'pink', color: '#e5458f', at: [-9.5, -32.5] },
+    { name: 'green', color: '#8fcf3e', at: [9.5, -32.5] },
+  ],
+  radius: 6.5, groove: 0.6, dot: 3.2, depth: 0.6,
+  // Centre line from below the lower eyes to the encoder.
+  line: { width: 0.8, y: [-41.5, -50] },
+};
+const hexagon = (at, r) => [...Array(6)].map((_, i) => {
+  const a = Math.PI / 2 + (i * Math.PI) / 3;
+  return [at[0] + r * Math.cos(a), at[1] + r * Math.sin(a)];
+});
+
 // Heat-set inserts M2 in the middle cover: hole for the insert, then room for the screw tip.
 // The hole for the screw tip stops `tipCover` below the top of the cover.
 const INSERT = { boss: 6, hole: 3.2, depth: 4.5, tip: 2.0, tipCover: 1.2 };
@@ -118,5 +139,22 @@ export const topShell = part('Molekula · Top shell', () => {
   circleBodies('middle', p, screws, INSERT.hole, PT - 1, PT + INSERT.depth, 'Middle · insert hole', { remove: [middle] });
   circleBodies('middle', p, screws, INSERT.tip, PT - 1, PT + s.coverHeight - INSERT.tipCover, 'Middle · screw tip', { remove: [middle] });
 
-  color('#6b7380', left, right, middle);
+  // Guardian motif: pocket with the groove around each eye, a pillar for the open centre,
+  // the inlay as its own body, and the centre line.
+  if (param('Guardian motif on the middle cover', true, 'checkbox')) {
+    const top = PT + s.coverHeight;
+    const z0 = top - MOTIF.depth;
+    const outer = MOTIF.radius + MOTIF.groove / Math.cos(Math.PI / 6);
+    rectBodies('middle', p, MOTIF.eyes.map(e => ({ corners: hexagon(e.at, outer) })), z0, top + 1, 'Middle · eye pocket', { remove: [middle] });
+    circleBodies('middle', p, MOTIF.eyes.map(e => e.at), MOTIF.dot, z0 - 0.05, top, 'Middle · eye centre', { add: [middle] });
+    rectBodies('middle', p, [{ center: [0, (MOTIF.line.y[0] + MOTIF.line.y[1]) / 2], width: MOTIF.line.width, height: Math.abs(MOTIF.line.y[1] - MOTIF.line.y[0]) }],
+      z0, top + 1, 'Middle · centre line', { remove: [middle] });
+    for (const e of MOTIF.eyes) {
+      const [eye] = rectBodies('middle', p, [{ corners: hexagon(e.at, MOTIF.radius) }], z0, top, `Eye · ${e.name}`);
+      circleBodies('middle', p, [e.at], MOTIF.dot, z0 - 1, top + 1, `Eye · ${e.name} · centre`, { remove: [eye] });
+      color(e.color, eye);
+    }
+  }
+
+  color('#d8c9a3', left, right, middle);
 });

@@ -35,6 +35,10 @@ The top shell consists of three print parts:
 - **Top plates (left and right):** 2.2 mm thick and flat, lying on the key boards. They hide the green boards. The switches are pushed through 14 mm cut-outs into the hotswap sockets, and their clips catch under the plate as on a normal Choc plate. The outer wall of the bottom shell rises to the top of the plates, so the plates sit recessed in a pocket and the side shows one flat wall. The key boards have no mounting holes. Instead, seven crush ribs per side on the inside of the wall hold each plate: they stand 0.35 mm out of the wall and are squeezed by 0.15 mm when the plate is pressed in.
 - **Middle cover:** covers the Helios, the FFC sockets and the cables. Its flat top reaches over the cable gap onto the inner edges of both plates and clamps them. It is 7 mm high above the board, just as high as the square body of the encoder, which sits flush in a square opening. The cut-out for the USB-C plug is centred on the real receptacle and continues as a small notch in the bottom shell. The heights come from the built keyboard: the Helios is soldered almost flat onto the board with its parts facing up, the top of the USB-C receptacle is 4.5 mm above the board, the encoder body 7 mm, the shaft tip 15.6 mm. In the model, Helios and encoder are built from these measurements instead of the KiCad 3D models.
 
+On top of the middle cover sits a small motif: three hexagonal eyes in blue, pink and green, arranged in a triangle, with a recessed outline around each eye and a recessed line down to the encoder. The eyes are 0.6 mm deep colour inlays with an open centre in which the cover colour shows; the outlines and the line are plain recesses without a colour of their own. With the cover in the base colour this needs four filaments, for example an AMS with four slots. The parameter **Guardian motif on the middle cover** switches it off.
+
+![Middle cover with the three eye inlays](images/unibody-cover-eyes.png)
+
 Only three M2 screws hold the case together. They go from below through the bottom shell and the holes H5–H7 of the MCU board into M2 heat-set inserts (Ø 3.2 mm hole, 4.5 mm deep) in the middle cover. The access holes from the desk side are 11 mm wide, enough for a screwdriver shaft of 10 mm. M2 × 8 screws reach 4.3 mm into the inserts. Nothing is glued.
 
 Assembly: put the boards into the bottom shell and connect the cables. Press each plate into its pocket. Put the middle cover on and screw it from below. Then push in the switches.
@@ -51,12 +55,14 @@ The bottom shell prints in one piece. Diagonally it needs a square of about 221 
 node case/fluidcad/tools/print-files.mjs 15   # center wedge thickness in mm
 ```
 
+With the motif the script also writes the three eye inlays as `middle-cover-eye-blue/-pink/-green-wedge<mm>.step/.stl`, moved like the cover, and all four together as `middle-cover-with-eyes-wedge<mm>.step`. Load the cover and the three eyes together in the slicer as one object with several parts (Bambu Studio and OrcaSlicer ask when several files are loaded at once) and give each eye its filament. The cover lies on its top face, so all colours sit in the first three layers.
+
 Still open:
 
 - The splay has not been test-printed yet; 12° is a starting point.
 - The crush ribs have not been test-printed yet. If the plates sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**.
 - The encoder knob is not modelled yet.
-- A colour concept for multi-colour printing is kept in [case/concepts/guardian-motif.html](case/concepts/guardian-motif.html), not built yet.
+- The eye motif has not been test-printed yet. The first colour concept, with more elements than were built, is kept in [case/concepts/guardian-motif.html](case/concepts/guardian-motif.html).
 - The battery sockets J7 and J12 on the top side of the key boards would collide with the plates if populated.
 
 ## Board and manufacturing

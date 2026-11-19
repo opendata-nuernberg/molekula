@@ -15,9 +15,14 @@
  * and checks that exactly one valid solid results. The top shell parts stay separate; each
  * is rotated so that its largest flat face (the top) points down, and moved onto z = 0.
  *
+ * With the guardian motif the top shell also has three eye inlays. They get the same move as
+ * the middle cover, so the four STL files line up: load them together in the slicer as one
+ * object with several parts and give each eye its filament.
+ *
  * Output in case/fluidcad/print/ (not tracked in Git), ASCII STL:
  *   bottom-shell-wedge<mm>.step/.stl
  *   top-plate-left-wedge<mm>, top-plate-right-wedge<mm>, middle-cover-wedge<mm> (.step/.stl)
+ *   middle-cover-eye-blue/-pink/-green-wedge<mm>.stl, middle-cover-with-eyes-wedge<mm>.step
  */
 
 import fs from 'node:fs';
@@ -108,7 +113,7 @@ function fuse(parts) {
 
 /**
  * Turns a solid onto its largest flat face (coplanar faces summed up) and puts it on
- * z = 0, centred in X and Y.
+ * z = 0, centred in X and Y. Returns the turned solid and the move, for parts that belong to it.
  */
 function layFlat(shape) {
   const groups = new Map();
@@ -137,14 +142,24 @@ function layFlat(shape) {
   const angle = Math.atan2(s, -n[2]);
   if (s > 1e-9) trsf.SetRotation(new oc.gp_Ax1(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(axis[0], axis[1], axis[2])), angle);
   else if (n[2] > 0) trsf.SetRotation(new oc.gp_Ax1(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(1, 0, 0)), Math.PI);
-  let turned = new oc.BRepBuilderAPI_Transform(shape, trsf, true).Shape();
+  const turned = new oc.BRepBuilderAPI_Transform(shape, trsf, true).Shape();
   const b = new oc.Bnd_Box();
   oc.BRepBndLib.Add(turned, b, false);
   const [lo, hi] = [b.CornerMin(), b.CornerMax()];
   const move = new oc.gp_Trsf();
   move.SetTranslation(new oc.gp_Vec(-(lo.X() + hi.X()) / 2, -(lo.Y() + hi.Y()) / 2, -lo.Z()));
-  turned = new oc.BRepBuilderAPI_Transform(turned, move, true).Shape();
-  return turned;
+  const both = move.Multiplied(trsf);
+  return { shape: new oc.BRepBuilderAPI_Transform(shape, both, true).Shape(), move: both };
+}
+
+const moved = (shape, trsf) => new oc.BRepBuilderAPI_Transform(shape, trsf, true).Shape();
+
+function compound(shapes) {
+  const c = new oc.TopoDS_Compound();
+  const builder = new oc.BRep_Builder();
+  builder.MakeCompound(c);
+  for (const s of shapes) builder.Add(c, s);
+  return c;
 }
 
 function size(shape) {
@@ -178,17 +193,37 @@ const report = (name, shape, extra, t0) => {
 }
 {
   const t0 = Date.now();
-  const parts = readSolids(await render('top-shell'));
-  if (parts.length !== 3) throw new Error(`top shell: ${parts.length} solids instead of 3`);
-  const centreX = s => {
+  const solidsFound = readSolids(await render('top-shell'));
+  const centre = s => {
     const g = new oc.GProp_GProps();
     oc.BRepGProp.VolumeProperties(s, g);
-    return g.CentreOfMass().X();
+    return g.CentreOfMass();
   };
-  const [left, middle, right] = parts.sort((a, b) => centreX(a) - centreX(b));
-  for (const [name, shape] of [['top-plate-left', left], ['middle-cover', middle], ['top-plate-right', right]]) {
-    if (!new oc.BRepCheck_Analyzer(shape, true, false).IsValid()) throw new Error(`${name} is invalid`);
-    report(name, layFlat(shape), '', t0);
+  // The three print parts are large; the eye inlays are below 1 cm³.
+  const parts = solidsFound.filter(s => volume(s) > 1000);
+  const eyes = solidsFound.filter(s => volume(s) <= 1000);
+  if (parts.length !== 3 || ![0, 3].includes(eyes.length)) {
+    throw new Error(`top shell: ${parts.length} parts and ${eyes.length} eyes instead of 3 and 0 or 3`);
+  }
+  for (const s of solidsFound) if (!new oc.BRepCheck_Analyzer(s, true, false).IsValid()) throw new Error('top shell: invalid solid');
+  const [left, middle, right] = parts.sort((a, b) => centre(a).X() - centre(b).X());
+  report('top-plate-left', layFlat(left).shape, '', t0);
+  report('top-plate-right', layFlat(right).shape, '', t0);
+  const cover = layFlat(middle);
+  report('middle-cover', cover.shape, '', t0);
+  if (eyes.length) {
+    // Upper eye blue, lower left pink, lower right green (see MOTIF in top-shell.part.js).
+    const [blue, ...lower] = eyes.sort((a, b) => centre(b).Y() - centre(a).Y());
+    const [pink, green] = lower.sort((a, b) => centre(a).X() - centre(b).X());
+    const placed = [['blue', blue], ['pink', pink], ['green', green]].map(([n, s]) => [n, moved(s, cover.move)]);
+    for (const [n, s] of placed) report(`middle-cover-eye-${n}`, s, '', t0);
+    const all = compound([cover.shape, ...placed.map(([, s]) => s)]);
+    const base = path.join(OUTPUT, `middle-cover-with-eyes-wedge${wedge}`);
+    const w = new oc.STEPControl_Writer();
+    w.Transfer(all, oc.STEPControl_StepModelType.STEPControl_AsIs, true, new oc.Message_ProgressRange());
+    w.Write('/out.step');
+    fs.writeFileSync(`${base}.step`, oc.FS.readFile('/out.step'));
+    console.log(`middle-cover-with-eyes: cover and three eyes in one STEP -> ${path.relative(process.cwd(), base)}.step`);
   }
 }
 process.exit(0);

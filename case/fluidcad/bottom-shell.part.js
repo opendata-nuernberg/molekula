@@ -128,5 +128,5 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
   circleBodies('middle', p, screws, SCREW.head, -zh - 1, bottom + SCREW.headDepth, 'Middle · screw head', { remove: all });
   circleBodies('middle', p, [[-reset.center[0], reset.center[1]]], RESET_HOLE, -zh - 1, 1, 'Middle · reset access', { remove: all });
 
-  color('#4a4f57', ...all);
+  color('#cdbd95', ...all);
 });
