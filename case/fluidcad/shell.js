@@ -1,6 +1,6 @@
 import { circle, extrude, offset, param, plane, sketch } from 'fluidcad/core';
 import { boardThickness, boards, components } from './pcb-reference.js';
-import { boardHeight, halfTilt } from './layout.js';
+import { boardHeight, halfTilt, placement, point } from './layout.js';
 import { closed, rectangle, trace } from './outline.js';
 
 // Building blocks shared by the bottom and the top shell.
@@ -56,26 +56,39 @@ export function usbOpening() {
 
 /**
  * Sketch plane at height z0 in the frame of a region, in its final position, and the shift
- * dx that a KiCad X coordinate gets in the sketch (Y stays).
+ * (dx, dy) that a KiCad coordinate gets in the sketch.
  *
- * FluidCAD's plane('xy', { rotateY, offset }) puts the origin at (0, 0, offset) and rotates
- * the plane about Y around that point. For the halves (layout.js): world = A + Ry(φ)·(X, y, z)
- * with A = (axisX, 0, zh) on the pivot axis and X = x + shift − axisX. Equating with
- * (0, 0, o) + Ry(φ)·(u, y, 0) gives u = X + a, a = (axisX + z0·sin φ)/cos φ,
- * o = zh + a·sin φ + z0·cos φ.
+ * For the halves the board frame is placed by translations, the tilt about Y (phi) and the
+ * splay about Z (psi, layout.js): world = w0 + M·(x, y, 0) with M = Rz(psi)·Ry(phi) and
+ * w0 the world position of (0, 0, z0). FluidCAD's plane('xy', { rotateY, rotateZ,
+ * rotationAxes: 'world' }) turns the plane (0, 0, offset) about the world axes through the
+ * world origin, Y first, then Z: its points are M·(u, v, offset). With (a, b, c) = Mᵀ·w0 a
+ * board point lies at sketch (x + a, y + b) on the plane with offset c.
  */
 export function sketchPlane(region, p, z0) {
-  if (region === 'world') return { plane: plane('xy', { offset: z0 }), dx: 0 };
+  if (region === 'world') return { plane: plane('xy', { offset: z0 }), dx: 0, dy: 0 };
   const zh = boardHeight(p);
-  if (region === 'middle') return { plane: plane('xy', { offset: zh + z0 }), dx: 0 };
-  const { phi, axisX, shift } = halfTilt(region, p);
-  const w = (phi * Math.PI) / 180;
-  const a = (axisX + z0 * Math.sin(w)) / Math.cos(w);
-  const o = zh + a * Math.sin(w) + z0 * Math.cos(w);
-  return {
-    plane: Math.abs(phi) > 1e-9 ? plane('xy', { rotateY: phi, offset: o }) : plane('xy', { offset: o }),
-    dx: shift - axisX + a,
-  };
+  if (region === 'middle') return { plane: plane('xy', { offset: zh + z0 }), dx: 0, dy: 0 };
+  const { phi, psi } = halfTilt(region, p);
+  const steps = placement(region, p);
+  const w0 = point(steps, [0, 0, z0]);
+  // Columns of M: images of the unit vectors.
+  const col = e => point(steps, [e[0], e[1], z0 + e[2]]).map((v, i) => v - w0[i]);
+  const m = [col([1, 0, 0]), col([0, 1, 0]), col([0, 0, 1])];
+  const [a, b, c] = m.map(v => v[0] * w0[0] + v[1] * w0[1] + v[2] * w0[2]);
+  const options = { offset: c, rotationAxes: 'world' };
+  if (Math.abs(phi) > 1e-9) options.rotateY = phi;
+  if (Math.abs(psi) > 1e-9) options.rotateZ = psi;
+  return { plane: options.rotateY || options.rotateZ ? plane('xy', options) : plane('xy', { offset: c }), dx: a, dy: b };
+}
+
+/**
+ * World XY of a point given in the frame of a region (board bottom, z = 0). The frame of the
+ * middle is already in world XY (callers mirror KiCad X themselves).
+ */
+export function worldXY(region, p, xy) {
+  if (region === 'world' || region === 'middle') return xy;
+  return point(placement(region, p), [xy[0], xy[1], 0]).slice(0, 2);
 }
 
 /**
@@ -92,7 +105,7 @@ function apply(e, mode) {
 /** Height of the sketch plane: bottom for bodies, top for cuts. */
 const start = (mode, z0, z1) => (mode?.remove ? z1 : z0);
 
-const shiftSteps = (points, dx) => points.map(s => (s.length === 4 ? [s[0] + dx, s[1], s[2] + dx, s[3]] : [s[0] + dx, s[1]]));
+const shiftSteps = (points, dx, dy) => points.map(s => (s.length === 4 ? [s[0] + dx, s[1] + dy, s[2] + dx, s[3] + dy] : [s[0] + dx, s[1] + dy]));
 
 /**
  * Outline of a board, offset by distance (positive outward), as a prism from z0 to z1 in
@@ -100,9 +113,9 @@ const shiftSteps = (points, dx) => points.map(s => (s.length === 4 ? [s[0] + dx,
  */
 export function outlineBody(region, p, distance, z0, z1, name, mode = null, outline = region) {
   const b = boards[outline];
-  const { plane: e, dx } = sketchPlane(region, p, start(mode, z0, z1));
+  const { plane: e, dx, dy } = sketchPlane(region, p, start(mode, z0, z1));
   const s = sketch(e, () => {
-    const edges = trace(shiftSteps([b.start], dx)[0], shiftSteps(b.steps, dx));
+    const edges = trace(shiftSteps([b.start], dx, dy)[0], shiftSteps(b.steps, dx, dy));
     if (Math.abs(distance) > 1e-9) {
       edges.forEach(k => k.guide());
       offset(distance, ...edges);
@@ -113,14 +126,16 @@ export function outlineBody(region, p, distance, z0, z1, name, mode = null, outl
 
 /**
  * Rotated rectangles, each its own body (boolean operations only process the first part
- * of a multi-part tool body), as prisms from z0 to z1.
- * @param {{ center: number[], width: number, height: number, rotation?: number }[]} rects
+ * of a multi-part tool body), as prisms from z0 to z1. Instead of a rectangle an entry can
+ * give the corners of a polygon.
+ * @param {({ center: number[], width: number, height: number, rotation?: number } | { corners: number[][] })[]} rects
  */
 export function rectBodies(region, p, rects, z0, z1, name, mode = null) {
   return rects.map((r, i) => {
-    const { plane: e, dx } = sketchPlane(region, p, start(mode, z0, z1));
+    const { plane: e, dx, dy } = sketchPlane(region, p, start(mode, z0, z1));
     const s = sketch(e, () => {
-      closed(rectangle([r.center[0] + dx, r.center[1]], r.width, r.height, r.rotation ?? 0));
+      if (r.corners) closed(r.corners.map(c => [c[0] + dx, c[1] + dy]));
+      else closed(rectangle([r.center[0] + dx, r.center[1] + dy], r.width, r.height, r.rotation ?? 0));
     }).name(`${name} ${i + 1} · sketch`);
     return apply(extrude(z1 - z0, s), mode).name(rects.length > 1 ? `${name} ${i + 1}` : name);
   });
@@ -129,9 +144,9 @@ export function rectBodies(region, p, rects, z0, z1, name, mode = null) {
 /** Circles with diameter d, each its own body, as cylinders from z0 to z1. */
 export function circleBodies(region, p, centers, d, z0, z1, name, mode = null) {
   return centers.map((m, i) => {
-    const { plane: e, dx } = sketchPlane(region, p, start(mode, z0, z1));
+    const { plane: e, dx, dy } = sketchPlane(region, p, start(mode, z0, z1));
     const s = sketch(e, () => {
-      circle([m[0] + dx, m[1]], d);
+      circle([m[0] + dx, m[1] + dy], d);
     }).name(`${name} ${i + 1} · sketch`);
     return apply(extrude(z1 - z0, s), mode).name(centers.length > 1 ? `${name} ${i + 1}` : name);
   });
@@ -176,6 +191,24 @@ export function edgeRect(place, d0, d1, w) {
   };
 }
 
+/** y range of the bridges between middle and halves, and of the cover over the cable gap. */
+export const bridgeY = s => [-(63 + s.clearance + s.wall) + 0.1, -(8 - s.clearance - s.wall) - 0.1];
+
+/**
+ * Quadrilateral in world XY between the middle (at |x| = xMiddle) and a half (up to
+ * KiCad |x| = xHalf in the frame of the half, so it follows the splayed inner edge).
+ * @param {number} side -1 left, +1 right
+ */
+export function gapCorners(side, p, y, xMiddle, xHalf) {
+  const region = side < 0 ? 'left' : 'right';
+  return [
+    [side * xMiddle, y[0]],
+    worldXY(region, p, [side * xHalf, y[0]]),
+    worldXY(region, p, [side * xHalf, y[1]]),
+    [side * xMiddle, y[1]],
+  ];
+}
+
 /**
  * Bridge between the middle and a half (world, not tilted). Fills the gap left by the panel
  * tab and the cable gap between the outer walls and reaches a little into both pockets; the
@@ -183,14 +216,19 @@ export function edgeRect(place, d0, d1, w) {
  * @param {number} side -1 left, +1 right
  */
 export function bridge(side, p, s, z0, z1, name, mode = null) {
-  const xMiddle = 11.5;
-  const xHalf = 14.5 + p.cableGap + 1;
-  const y = [-(63 + s.clearance + s.wall) + 0.1, -(8 - s.clearance - s.wall) - 0.1];
-  return rectBodies(
-    'world', p,
-    [{ center: [(side * (xMiddle + xHalf)) / 2, (y[0] + y[1]) / 2], width: xHalf - xMiddle, height: y[1] - y[0] }],
-    z0, z1, name, mode,
-  )[0];
+  return rectBodies('world', p, [{ corners: gapCorners(side, p, bridgeY(s), 11.5, 14.5 + 1) }], z0, z1, name, mode)[0];
+}
+
+/**
+ * KiCad X in the frame of a half at which a line along X at KiCad y reaches world |x| =
+ * target in the middle. Ignores the tilt, which hardly moves points near the inner edge.
+ */
+export function reachIntoMiddle(side, p, y, target) {
+  const region = side < 0 ? 'left' : 'right';
+  const [x0] = worldXY(region, p, [0, y]);
+  const [x1] = worldXY(region, p, [side * 10, y]);
+  // World x is affine in KiCad x along the line.
+  return ((side * target - x0) / (x1 - x0)) * side * 10;
 }
 
 /** Large box in world coordinates. */

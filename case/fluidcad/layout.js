@@ -16,9 +16,15 @@ import { boardThickness, boards } from './pcb-reference.js';
 //   much higher the inner edges and the middle sit than on the flat keyboard. The angle
 //   follows from it so that the outer edges just touch the desk (wedge thickness 0 there).
 //   The middle sits flat at the height of the inner edges.
+// - Splay: then each half turns about a vertical axis through the top of its inner edge, so
+//   its columns lean toward the middle at the top and the thumbs move apart. The old
+//   Molekula with magnetic connectors had 18° per half. A turn about a vertical axis keeps
+//   the outer edges on the desk.
 
 /** Inner edge of the halves in KiCad X (±). */
 export const INNER_EDGE_X = 14.5;
+/** KiCad Y of the top end of the inner edge: the splay axis of the halves. */
+export const SPLAY_Y = -8;
 
 /**
  * Layout parameters. Called in the body of every part so all parts share the same
@@ -28,6 +34,7 @@ export function layoutParams() {
   const p = {
     wedge: param('Center wedge thickness (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
     pivotOffset: param('Pivot offset inward (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
+    splay: param('Splay per half (°)', 12, 'number', { min: 0, max: 25, step: 0.5 }),
     cableGap: param('Cable gap (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
     floor: param('Floor thickness (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),
     underSpace: param('Space under the boards (mm)', 2.5, 'number', { min: 2, max: 6, step: 0.1 }),
@@ -88,18 +95,22 @@ export function placement(region, p) {
     const d = boardThickness / 2;
     return [{ t: [0, 0, -d] }, { r: ['y', 180] }, { t: [0, 0, d + z] }];
   }
-  const { phi, axisX, shift } = halfTilt(region, p);
+  const { phi, axisX, shift, psi, pivot } = halfTilt(region, p);
   return [
     { t: [shift, 0, z] },
     { t: [-axisX, 0, -z] },
     { r: ['y', phi] },
     { t: [axisX, 0, z] },
+    { t: [-pivot[0], -pivot[1], 0] },
+    { r: ['z', psi] },
+    { t: [pivot[0], pivot[1], 0] },
   ];
 }
 
 /**
  * Tilt of a half: angle about Y (phi), position of the pivot axis in X (axisX, at the
- * height of the board bottom) and outward shift by the cable gap.
+ * height of the board bottom) and outward shift by the cable gap. Splay: angle about Z (psi)
+ * and the world XY point the vertical splay axis goes through (pivot).
  * @param {'left' | 'right'} region
  */
 export function halfTilt(region, p) {
@@ -112,6 +123,10 @@ export function halfTilt(region, p) {
     phi: side * p.tenting,
     axisX: side * (INNER_EDGE_X + p.cableGap - p.pivotOffset),
     shift: side * p.cableGap,
+    // Positive turns about Z are counter-clockwise: the right half turns that way, so its
+    // columns lean toward the middle at the top.
+    psi: side * (p.splay ?? 0),
+    pivot: [side * (INNER_EDGE_X + p.cableGap), SPLAY_Y],
   };
 }
 

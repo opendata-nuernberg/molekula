@@ -9,7 +9,9 @@ import { topShell } from './top-shell.part.js';
 //
 // Tenting is set by the wedge thickness at the middle: the middle and the inner edges sit
 // that much higher than on the flat keyboard, the outer edges stand on the desk. The angle
-// follows from it (15 mm ≈ 6.8°); the tilt runs from the outside in only.
+// follows from it (15 mm ≈ 6.8°); the tilt runs from the outside in only. The splay turns
+// each half about the top of its inner edge (12° per half by default, the old Molekula with
+// magnetic connectors had 18°).
 //
 // The configurations are starting points for experiments. The "Assembly Parameters" panel
 // lets you change the values freely and save them as a new configuration.
@@ -25,6 +27,7 @@ export const keyboard = assembly('Molekula · Keyboard', () => {
   const values = {
     'Center wedge thickness (mm)': param('Center wedge thickness (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
     'Pivot offset inward (mm)': param('Pivot offset inward (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
+    'Splay per half (°)': param('Splay per half (°)', 12, 'number', { min: 0, max: 25, step: 0.5 }),
     'Cable gap (mm)': param('Cable gap (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
     'Floor thickness (mm)': param('Floor thickness (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),
     'Space under the boards (mm)': param('Space under the boards (mm)', 2.5, 'number', { min: 2, max: 6, step: 0.1 }),

@@ -2,7 +2,7 @@ import { color, part } from 'fluidcad/core';
 import { envelopes } from './envelopes.js';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { RIBS, bridge, circleBodies, edgeRect, outlineBody, rectBodies, shellParams, usbOpening, worldBox } from './shell.js';
+import { RIBS, bridge, circleBodies, edgeRect, outlineBody, reachIntoMiddle, rectBodies, shellParams, usbOpening, worldBox } from './shell.js';
 
 // Bottom shell of the keyboard without magnetic connectors: one piece for both halves and
 // the middle. The parting surface to the top shell is the top of each board.
@@ -83,7 +83,9 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
     if (p.tenting > 0) outlineBody(region, p, s.clearance + s.wall + OVERLAP, PT, PT + 60, `${R} · above the parting surface`, { remove: [middle] });
     outlineBody(region, p, -s.ledge, -p.underSpace, 0.01, `${R} · space under the board`, { remove: target });
     outlineBody(region, p, s.clearance, 0, PT + s.plate + 1, `${R} · board and plate pocket`, { remove: target });
-    const x0 = side * (14.5 - p.cableGap - CABLE.intoMiddle);
+    // Into the middle far enough to cross its wall also when the half is splayed.
+    const into = Math.min(14.5 - p.cableGap - CABLE.intoMiddle, ...CABLE.y.map(y => side * reachIntoMiddle(side, p, y, 9.5)));
+    const x0 = side * into;
     const x1 = side * (14.5 + CABLE.intoHalf);
     rectBodies(region, p,
       [{ center: [(x0 + x1) / 2, (CABLE.y[0] + CABLE.y[1]) / 2], width: Math.abs(x1 - x0), height: CABLE.y[1] - CABLE.y[0] }],

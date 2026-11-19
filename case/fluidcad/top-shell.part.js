@@ -1,7 +1,7 @@
 import { color, part } from 'fluidcad/core';
-import { boardHeight, layoutParams } from './layout.js';
+import { INNER_EDGE_X, boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { ENCODER, circleBodies, outlineBody, rectBodies, shellParams, usbOpening } from './shell.js';
+import { ENCODER, bridgeY, circleBodies, gapCorners, outlineBody, reachIntoMiddle, rectBodies, shellParams, usbOpening } from './shell.js';
 
 // Top shell of the keyboard without magnetic connectors, in three print parts. Each has one
 // flat top face, so it prints upside down on that face without supports.
@@ -37,8 +37,6 @@ const PLATE_GAP = 0.2;
 // Heat-set inserts M2 in the middle cover: hole for the insert, then room for the screw tip.
 // The hole for the screw tip stops `tipCover` below the top of the cover.
 const INSERT = { boss: 6, hole: 3.2, depth: 4.5, tip: 2.0, tipCover: 1.2 };
-// Bridge between middle and half: y range like the bottom-shell bridge (shell.js).
-const BRIDGE_Y = (s) => [-(63 + s.clearance + s.wall) + 0.1, -(8 - s.clearance - s.wall) - 0.1];
 
 export const topShell = part('Molekula · Top shell', () => {
   const p = layoutParams();
@@ -55,18 +53,24 @@ export const topShell = part('Molekula · Top shell', () => {
   const plates = { left, right };
 
   // Middle cover over the cable gap and onto the plates, flat top at cover height.
-  const [y0, y1] = BRIDGE_Y(s);
   for (const side of [-1, 1]) {
-    const x0 = 11.5;
-    const x1 = 14.5 + p.cableGap + s.overlap;
-    rectBodies('world', p, [{ center: [(side * (x0 + x1)) / 2, (y0 + y1) / 2], width: x1 - x0, height: y1 - y0 }],
+    rectBodies('world', p, [{ corners: gapCorners(side, p, bridgeY(s), 11.5, 14.5 + s.overlap) }],
       zh + PT, zh + PT + s.coverHeight, `Middle · cover over the ${side < 0 ? 'left' : 'right'} plate`, { add: [middle] });
   }
   // Below the top of the plates (and a little around the wall of the pocket) everything
   // belongs to the bottom shell and the plates.
   for (const region of ['left', 'right']) {
-    outlineBody(region, p, outside + PLATE_GAP, -80, PT + s.plate,
+    outlineBody(region, p, outside + PLATE_GAP, -10, PT + s.plate,
       `${region === 'left' ? 'Left' : 'Right'} · room for the plate`, { remove: [middle] });
+  }
+  // The same once more as a plain box under the cover over the plate: with steep tenting
+  // and splay the cut above alone sometimes fails silently there.
+  for (const [region, side] of [['left', -1], ['right', 1]]) {
+    const [y0, y1] = bridgeY(s);
+    const x0 = INNER_EDGE_X - outside - PLATE_GAP;
+    const x1 = INNER_EDGE_X + s.overlap + 1;
+    rectBodies(region, p, [{ center: [(side * (x0 + x1)) / 2, (y0 - 1 + y1 + 0.6) / 2], width: x1 - x0, height: y1 - y0 + 1.6 }],
+      -10, PT + s.plate, `${region === 'left' ? 'Left' : 'Right'} · room for the plate under the cover`, { remove: [middle] });
   }
 
   for (const region of ['left', 'right']) {
@@ -84,7 +88,9 @@ export const topShell = part('Molekula · Top shell', () => {
   // Cable pass at the inner edges, through the plate and into the cover.
   for (const [region, side] of [['left', -1], ['right', 1]]) {
     const R = region === 'left' ? 'Left' : 'Right';
-    const x0 = side * (14.5 - p.cableGap - CABLE.intoMiddle);
+    // Into the middle far enough to cross its wall also when the half is splayed.
+    const into = Math.min(14.5 - p.cableGap - CABLE.intoMiddle, ...CABLE.y.map(y => side * reachIntoMiddle(side, p, y, 9.5)));
+    const x0 = side * into;
     const x1 = side * (14.5 + CABLE.intoHalf);
     rectBodies(region, p,
       [{ center: [(x0 + x1) / 2, (CABLE.y[0] + CABLE.y[1]) / 2], width: Math.abs(x1 - x0), height: CABLE.y[1] - CABLE.y[0] }],

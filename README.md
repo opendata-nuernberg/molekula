@@ -24,6 +24,8 @@ The two halves are joined by magnetic connector boards and can be separated. The
 
 ![Unibody case from the front: the halves rise toward the middle](images/unibody-tented-front.png)
 
+![Unibody case from above: the halves are splayed by 12° each](images/unibody-top.png)
+
 This variant has no magnetic connectors. It is one continuous case made of a bottom shell and a top shell that hide the FFC cables. The MCU board sits upside down in the middle, so the Helios and the encoder face up and the reset button is reachable from below. The nice!view is not used.
 
 ![Bottom shell with the two top plates and the middle cover, without components](images/unibody-shells.png)
@@ -39,9 +41,11 @@ Assembly: put the boards into the bottom shell and connect the cables. Press eac
 
 The halves are tented from the outside in, like a roof: the outer edges stand on the desk, and the inner edges and the middle are raised by the wedge thickness. There is no front-to-back tilt. The wedge is printed into the bottom shell.
 
-The model lives in [case/fluidcad/](case/fluidcad/) and is built with [FluidCAD](https://fluidcad.io) 0.0.51. Open [`keyboard.assembly.js`](case/fluidcad/keyboard.assembly.js) in the FluidCAD editor. The parameter **Center wedge thickness (mm)** sets the tenting; 15 mm corresponds to about 6.8°. The configurations Flat and Wedge 10/15/20/25 mm are starting points, and the parameter panel lets you save your own. The components are simplified envelope bodies so the editor stays responsive. **Detailed models (slow)** switches to the imported originals for a final check.
+The halves are also splayed: each one is turned about the top end of its inner edge, so the columns lean toward the middle at the top and the thumb clusters move apart. The default is 12° per half; the old Molekula with magnetic connectors had 18°. The middle cover grows into a trapezoid that covers the wider gap. Splayed by 12°, the FFC sockets on the halves are about 5–6 mm farther from those on the middle board than without splay, and the cable runs at a 12° angle, so the FFC cables need some slack.
 
-The bottom shell prints in one piece. Diagonally it needs a square of about 214 mm, so it fits a 256 × 256 mm bed. The three top parts each have one flat top face and print upside down on it, without supports; together they fit on one bed. In the model the bottom shell consists of three overlapping bodies. To get the bottom shell as one solid and the top parts already turned onto their top faces, as STEP and STL in `case/fluidcad/print/`, run:
+The model lives in [case/fluidcad/](case/fluidcad/) and is built with [FluidCAD](https://fluidcad.io) 0.0.51. Open [`keyboard.assembly.js`](case/fluidcad/keyboard.assembly.js) in the FluidCAD editor. The parameter **Center wedge thickness (mm)** sets the tenting; 15 mm corresponds to about 6.8°. **Splay per half (°)** sets the splay. The configurations Flat and Wedge 10/15/20/25 mm are starting points, and the parameter panel lets you save your own. The components are simplified envelope bodies so the editor stays responsive. **Detailed models (slow)** switches to the imported originals for a final check.
+
+The bottom shell prints in one piece. Diagonally it needs a square of about 221 mm, so it fits a 256 × 256 mm bed. The three top parts each have one flat top face and print upside down on it, without supports; together they fit on one bed. In the model the bottom shell consists of three overlapping bodies. To get the bottom shell as one solid and the top parts already turned onto their top faces, as STEP and STL in `case/fluidcad/print/`, run:
 
 ```sh
 node case/fluidcad/tools/print-files.mjs 15   # center wedge thickness in mm
@@ -49,6 +53,7 @@ node case/fluidcad/tools/print-files.mjs 15   # center wedge thickness in mm
 
 Still open:
 
+- The splay has not been test-printed yet; 12° is a starting point.
 - The crush ribs have not been test-printed yet. If the plates sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**.
 - The encoder knob is not modelled yet.
 - The battery sockets J7 and J12 on the top side of the key boards would collide with the plates if populated.
