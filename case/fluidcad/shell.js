@@ -21,6 +21,7 @@ export function shellParams() {
     clearance: param('PCB clearance per side (mm)', 0.6, 'number', { min: 0.2, max: 1.5, step: 0.1 }),
     ledge: param('Ledge under the PCB edge (mm)', 1.0, 'number', { min: 0.5, max: 3, step: 0.1 }),
     plate: param('Top plate thickness (mm)', 2.2, 'number', { min: 1.5, max: 3, step: 0.1 }),
+    plateGap: param('Gap between top plate and wall (mm)', 0.2, 'number', { min: 0, max: 0.6, step: 0.05 }),
     switchCutout: param('Switch cut-out in the top plate (mm)', 14.0, 'number', { min: 13.8, max: 14.4, step: 0.05 }),
     overlap: param('Middle cover overlap onto the plates (mm)', 4, 'number', { min: 2, max: 8, step: 0.5 }),
     coverHeight: param('Middle cover height above the PCB (mm)', 9.5, 'number', { min: 4, max: 20, step: 0.1 }),
@@ -112,36 +113,42 @@ export function circleBodies(region, p, centers, d, z0, z1, name, mode = null) {
 }
 
 /**
- * Hooks that hold the outer edge of the top plates: the plate has a tongue at its underside
- * that slides outward under a hood of the bottom shell. Each hook sits on a straight outer
- * edge of its board (KiCad frame; the boards are not exact mirror images): edgeX is the
- * board edge, y the centre along the edge. All edges face outward in X, so the plate engages all
- * hooks by sliding outward; the middle cover then blocks it from sliding back.
- *
- * Across the edge, d counts outward from the board edge. The bottom shell gets a bulge
- * (d up to wall + bulge) whose top part is the hood; the plate is notched there and keeps
- * only the tongue, which reaches under the hood up to d = reach.
+ * Crush ribs that hold the top plates in their pocket. The outer wall of each half rises to
+ * the top of the plate, so the plate sits recessed in the bottom shell. Narrow vertical ribs on
+ * the inner face of the wall are squeezed when the plate is pressed in and keep it in place
+ * without screws or glue. Each rib sits on a straight, axis-parallel board edge (KiCad frame;
+ * the boards are not exact mirror images): at is a point on the edge, n the outward normal.
  */
-export const HOOK = {
+export const RIBS = {
   places: {
-    left: [{ edgeX: -138.5, y: -34 }, { edgeX: -119.5, y: -19 }, { edgeX: -119, y: -49 }],
-    right: [{ edgeX: 138, y: -34 }, { edgeX: 119, y: -19 }, { edgeX: 119, y: -49 }],
+    left: [
+      { at: [-138.5, -34], n: [-1, 0] }, { at: [-71.5, 0], n: [0, 1] }, { at: [-108.75, -10], n: [0, 1] },
+      { at: [-127.75, -42], n: [0, -1] }, { at: [-55.5, -78], n: [0, -1] }, { at: [-66, -62], n: [-1, 0] },
+      { at: [-29.75, -8], n: [0, 1] },
+    ],
+    right: [
+      { at: [138, -34], n: [1, 0] }, { at: [71.5, 0], n: [0, 1] }, { at: [108.5, -10], n: [0, 1] },
+      { at: [127.5, -42], n: [0, -1] }, { at: [55.5, -78], n: [0, -1] }, { at: [66, -62], n: [1, 0] },
+      { at: [29.75, -8], n: [0, 1] },
+    ],
   },
-  width: 6, // tongue width along the edge
-  hood: 10, // hood width along the edge
-  thickness: 1.0, // tongue thickness, from the board top
-  reach: 2.4, // tongue tip, d from the board edge
-  gap: 0.2, // clearance around the tongue and the hood
-  bulge: 2.0, // bulge of the bottom shell beyond its outer wall
+  width: 1.2, // along the edge
+  depth: 0.35, // how far a rib stands out of the wall
+  leadIn: 0.6, // the top of the pocket stays free of ribs, so the plate finds its place first
 };
 
 /**
- * Rectangle across a hook: d from d0 to d1 outward from the board edge, t from -w/2 to w/2
- * along the edge, in the frame of the region ('left' or 'right').
+ * Rectangle across a straight board edge: d from d0 to d1 outward from the edge, w wide along
+ * the edge. place: { at, n } as in RIBS.
  */
-export function hookRect(region, place, d0, d1, w) {
-  const out = region === 'left' ? -1 : 1;
-  return { center: [place.edgeX + (out * (d0 + d1)) / 2, place.y], width: d1 - d0, height: w };
+export function edgeRect(place, d0, d1, w) {
+  const [nx, ny] = place.n;
+  const d = (d0 + d1) / 2;
+  return {
+    center: [place.at[0] + nx * d, place.at[1] + ny * d],
+    width: nx !== 0 ? d1 - d0 : w,
+    height: nx !== 0 ? w : d1 - d0,
+  };
 }
 
 /**

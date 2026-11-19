@@ -30,12 +30,12 @@ This variant has no magnetic connectors. It is one continuous case made of a bot
 
 The top shell consists of three print parts:
 
-- **Top plates (left and right):** 2.2 mm thick and flat, lying on the key boards. They hide the green boards. The switches are pushed through 14 mm cut-outs into the hotswap sockets, and their clips catch under the plate as on a normal Choc plate. The key boards have no mounting holes. Instead, each plate has three tongues at its outer edge that slide outward under hoods of the bottom shell.
-- **Middle cover:** covers the Helios, the FFC sockets and the cables, with a hole for the encoder and a cut-out for the USB-C plug. Its flat top reaches over the cable gap onto the inner edges of both plates and clamps them. Next to the plates it reaches down to the bottom shell, so a plate cannot slide back off its hooks.
+- **Top plates (left and right):** 2.2 mm thick and flat, lying on the key boards. They hide the green boards. The switches are pushed through 14 mm cut-outs into the hotswap sockets, and their clips catch under the plate as on a normal Choc plate. The outer wall of the bottom shell rises to the top of the plates, so the plates sit recessed in a pocket and the side shows one flat wall. The key boards have no mounting holes. Instead, seven crush ribs per side on the inside of the wall hold each plate: they stand 0.35 mm out of the wall and are squeezed by 0.15 mm when the plate is pressed in.
+- **Middle cover:** covers the Helios, the FFC sockets and the cables, with a hole for the encoder and a cut-out for the USB-C plug. Its flat top reaches over the cable gap onto the inner edges of both plates and clamps them.
 
 Only three M2 screws hold the case together. They go from below through the bottom shell and the holes H5–H7 of the MCU board into M2 heat-set inserts (Ø 3.2 mm hole, 4.5 mm deep) in the middle cover. The access holes from the desk side are 11 mm wide, enough for a screwdriver shaft of 10 mm. M2 × 8 screws reach 4.3 mm into the inserts. Nothing is glued.
 
-Assembly: put the boards into the bottom shell and connect the cables. Lay each plate on its board shifted about 2 mm toward the middle, then slide it outward onto its hooks. Put the middle cover on and screw it from below. Then push in the switches.
+Assembly: put the boards into the bottom shell and connect the cables. Press each plate into its pocket. Put the middle cover on and screw it from below. Then push in the switches.
 
 The halves are tented from the outside in, like a roof: the outer edges stand on the desk, and the inner edges and the middle are raised by the wedge thickness. There is no front-to-back tilt. The wedge is printed into the bottom shell.
 
@@ -49,7 +49,7 @@ node case/fluidcad/tools/print-files.mjs 15   # center wedge thickness in mm
 
 Still open:
 
-- The hooks have not been test-printed yet. Their hoods are 1 mm thick above the tongue.
+- The crush ribs have not been test-printed yet. If the plates sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**.
 - The encoder knob is not modelled yet.
 - The battery sockets J7 and J12 on the top side of the key boards would collide with the plates if populated.
 

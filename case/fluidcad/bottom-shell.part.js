@@ -2,13 +2,16 @@ import { color, part } from 'fluidcad/core';
 import { envelopes } from './envelopes.js';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components, holes, switches } from './pcb-reference.js';
-import { HOOK, bridge, circleBodies, hookRect, outlineBody, rectBodies, shellParams, worldBox } from './shell.js';
+import { RIBS, bridge, circleBodies, edgeRect, outlineBody, rectBodies, shellParams, worldBox } from './shell.js';
 
 // Bottom shell of the keyboard without magnetic connectors: one piece for both halves and
 // the middle. The parting surface to the top shell is the top of each board.
 //
 // - Halves: rest with their edge on a surrounding ledge and are clamped by the top plates
-//   (the key boards have no mounting holes). With tenting (inside up, outside down) a wedge grows underneath
+//   (the key boards have no mounting holes). The outer wall rises to the top of the plates,
+//   so the plates sit recessed in a pocket and the side shows one flat wall. Crush ribs on
+//   the inside of the wall hold the plates (RIBS in shell.js).
+//   With tenting (inside up, outside down) a wedge grows underneath
 //   down to the desk. It is modelled solid: a closed cavity would have a shallow sloped
 //   ceiling that cannot be printed without enclosed supports. The slicer's infill keeps
 //   the wedge light.
@@ -16,8 +19,6 @@ import { HOOK, bridge, circleBodies, hookRect, outlineBody, rectBodies, shellPar
 //   inserts in the middle cover and hold bottom shell, board and cover together. With
 //   tenting the middle stands on a pedestal; access holes for a screwdriver and for the
 //   reset button reach up from the desk side.
-// - Hooks: at three outer edges of each half a bulge with a hood, under which the tongue of
-//   the top plate slides (see HOOK in shell.js).
 // - Cable pass: at each inner edge a channel for the FFC cable from J4/J5 to the middle.
 // - Reliefs: where hotswap sockets or the Helios header pins reach over the ledge, it is
 //   cut back.
@@ -57,16 +58,11 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
   // unreliable in FluidCAD (they fail silently or lose bodies). The bodies overlap at the
   // seam; tools/print-files.mjs fuses them into one solid for printing. Every cut acts on
   // all three, each with its own separate target body.
-  const left = outlineBody('left', p, s.clearance + s.wall, bottom - depth, PT, 'Left · outside');
-  const right = outlineBody('right', p, s.clearance + s.wall, bottom - depth, PT, 'Right · outside');
+  const left = outlineBody('left', p, s.clearance + s.wall, bottom - depth, PT + s.plate, 'Left · outside');
+  const right = outlineBody('right', p, s.clearance + s.wall, bottom - depth, PT + s.plate, 'Right · outside');
   const middle = outlineBody('middle', p, s.clearance + s.wall, -zh, PT, 'Middle · outside');
   for (const side of [-1, 1]) bridge(side, p, s, 0, zh + PT, `Bridge ${side < 0 ? 'left' : 'right'}`, { add: [middle] });
   const all = [left, right, middle];
-  for (const [region, half, R] of [['left', left, 'Left'], ['right', right, 'Right']]) {
-    rectBodies(region, p,
-      HOOK.places[region].map(h => hookRect(region, h, s.clearance, s.clearance + s.wall + HOOK.bulge, HOOK.hood)),
-      bottom - depth, PT + s.plate, `${R} · hook bulge`, { add: [half] });
-  }
   if (depth > 0) {
     worldBox(p, -300, 0, 'Below the desk', { remove: [left, right] });
     for (const [half, side, R] of [[left, -1, 'Left'], [right, 1, 'Right']]) {
@@ -86,12 +82,12 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
     const target = [half, middle];
     if (p.tenting > 0) outlineBody(region, p, s.clearance + s.wall + OVERLAP, PT, PT + 60, `${R} · above the parting surface`, { remove: [middle] });
     outlineBody(region, p, -s.ledge, -p.underSpace, 0.01, `${R} · space under the board`, { remove: target });
-    outlineBody(region, p, s.clearance, 0, PT + 1, `${R} · board pocket`, { remove: target });
+    outlineBody(region, p, s.clearance, 0, PT + s.plate + 1, `${R} · board and plate pocket`, { remove: target });
     const x0 = side * (14.5 - p.cableGap - CABLE.intoMiddle);
     const x1 = side * (14.5 + CABLE.intoHalf);
     rectBodies(region, p,
       [{ center: [(x0 + x1) / 2, (CABLE.y[0] + CABLE.y[1]) / 2], width: Math.abs(x1 - x0), height: CABLE.y[1] - CABLE.y[0] }],
-      -p.underSpace, PT + 1, `${R} · cable pass`, { remove: target });
+      -p.underSpace, PT + s.plate + 1, `${R} · cable pass`, { remove: target });
     rectBodies(region, p,
       switches.filter(t => t.board === region).map(t => {
         const w = (t.rotation * Math.PI) / 180;
@@ -103,9 +99,10 @@ export const bottomShell = part('Molekula · Bottom shell', () => {
         };
       }),
       -p.underSpace, 0.01, `${R} · socket relief`, { remove: [half] });
+    // Crush ribs: from just above the board to below the lead-in at the top of the pocket.
     rectBodies(region, p,
-      HOOK.places[region].map(h => hookRect(region, h, s.clearance - 0.5, HOOK.reach + HOOK.gap, HOOK.width + 2 * HOOK.gap)),
-      PT, PT + HOOK.thickness + HOOK.gap, `${R} · hook slot`, { remove: [half] });
+      RIBS.places[region].map(r => edgeRect(r, s.clearance - RIBS.depth, s.clearance + 0.1, RIBS.width)),
+      PT + 0.05, PT + s.plate - RIBS.leadIn, `${R} · crush rib`, { add: [half] });
   }
 
   // Middle, in the frame of the upside-down board: KiCad X is mirrored.
