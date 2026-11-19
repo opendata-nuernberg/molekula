@@ -1,4 +1,4 @@
 .fluidcad/
 node_modules/
 __pycache__/
-druck/
+print/

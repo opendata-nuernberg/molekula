@@ -1,133 +1,132 @@
 import { param, rotate, translate } from 'fluidcad/core';
-import { platinenstaerke, teile } from './pcb-referenz.js';
+import { boardThickness, boards } from './pcb-reference.js';
 
-// Lage der drei Platinen in der fertigen Tastatur ohne Magnetverbinder.
+// Placement of the three boards in the finished keyboard without magnetic connectors.
 //
-// Weltkoordinaten: XY wie KiCad (pcb-referenz.js), z = 0 ist die Tischfläche.
-// Jede Platine wird in ihrem eigenen Rahmen gebaut (KiCad-XY, z = 0 Platinenunterseite,
-// z = platinenstaerke Oberseite) und dann mit einer Folge aus Verschiebungen und
-// Drehungen um Weltachsen an ihren Platz gesetzt. Dieselbe Folge gilt für alles, was
-// an der Platine hängt: Schalter, Bauteile und die Gehäuseteile der Region.
+// World coordinates: XY as in KiCad (pcb-reference.js), z = 0 is the desk surface.
+// Every board is built in its own frame (KiCad XY, z = 0 bottom of the board,
+// z = boardThickness top) and then moved into place by a sequence of translations and
+// rotations about world axes. The same sequence applies to everything attached to the
+// board: switches, components and the case parts of that region.
 //
-// - Mitte: umgedreht eingebaut (KiCad-B-Seite oben), damit Encoder und Helios oben liegen.
-// - Hälften: um Kabelspalt nach außen gerückt und um eine Achse parallel zur
-//   Innenkante gekippt (Tenting nur von außen nach innen, nicht von vorn nach hinten):
-//   die Innenkanten oben, die Außenseiten unten, wie ein Dach. Eingestellt wird die
-//   Keildicke in der Mitte, also wie weit Innenkanten und Mitte gegenüber der flachen
-//   Tastatur angehoben sind. Der Winkel ergibt sich daraus so, dass die Außenkanten
-//   gerade auf dem Tisch stehen (Keildicke dort 0). Die Mitte sitzt flach auf Höhe der
-//   Innenkanten.
+// - Middle: mounted upside down (KiCad bottom side up), so encoder and Helios face up.
+// - Halves: moved outward by the cable gap and tilted about an axis parallel to the inner
+//   edge (tenting from the outside in only, not front to back): inner edges up, outer
+//   edges down, like a roof. The setting is the wedge thickness at the middle, i.e. how
+//   much higher the inner edges and the middle sit than on the flat keyboard. The angle
+//   follows from it so that the outer edges just touch the desk (wedge thickness 0 there).
+//   The middle sits flat at the height of the inner edges.
 
-/** Innenkante der Hälften in KiCad-X (±). */
-export const INNENKANTE_X = 14.5;
+/** Inner edge of the halves in KiCad X (±). */
+export const INNER_EDGE_X = 14.5;
 
 /**
- * Layout-Parameter. Wird im Rumpf jedes Teils aufgerufen, damit alle Teile dieselben
- * Regler haben. Die Assembly reicht ihre Werte per insert(teil, { … }) durch.
+ * Layout parameters. Called in the body of every part so all parts share the same
+ * controls. The assembly passes its values through with insert(part, { … }).
  */
-export function layoutParameter() {
+export function layoutParams() {
   const p = {
-    keil: param('Keildicke Mitte (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
-    kippachse: param('Kippachse innen (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
-    kabelspalt: param('Kabelspalt (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
-    boden: param('Bodenstärke (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),
-    unterraum: param('Raum unter den Platinen (mm)', 2.5, 'number', { min: 2, max: 6, step: 0.1 }),
+    wedge: param('Center wedge thickness (mm)', 15, 'number', { min: 0, max: 40, step: 0.5 }),
+    pivotOffset: param('Pivot offset inward (mm)', 0, 'number', { min: 0, max: 30, step: 0.5 }),
+    cableGap: param('Cable gap (mm)', 3, 'number', { min: 1, max: 15, step: 0.5 }),
+    floor: param('Floor thickness (mm)', 1.6, 'number', { min: 1.2, max: 3, step: 0.1 }),
+    underSpace: param('Space under the boards (mm)', 2.5, 'number', { min: 2, max: 6, step: 0.1 }),
   };
-  p.tenting = tentingWinkel(p);
+  p.tenting = tentingAngle(p);
   return p;
 }
 
-// Außenwand und Spiel der Schalen für die Berechnung der Anhebung (Entwurfswerte aus
-// schale.js; ein etwas größerer Wert schadet nicht, der Keil wird am Tisch beschnitten).
-const RAND_AUSSEN = 2.5;
+// Outer wall plus clearance of the shells, used to compute the lift (design values from
+// shell.js; a slightly larger value does no harm, the wedge is trimmed at the desk).
+const OUTER_MARGIN = 2.5;
 
-/** Waagrechter Abstand von der Kippachse bis zur Außenkante der Unterschale (ungekippt). */
-function auslage(p) {
-  const ax = INNENKANTE_X + p.kabelspalt - p.kippachse;
-  const t = teile.links;
-  const xs = [t.start, ...t.schritte].flatMap(s => (s.length === 4 ? [s[0], s[2]] : [s[0]]));
-  return Math.max(...xs.map(x => Math.abs(x - p.kabelspalt + ax))) + RAND_AUSSEN;
+/** Horizontal distance from the pivot axis to the outer edge of the bottom shell (untilted). */
+function reach(p) {
+  const ax = INNER_EDGE_X + p.cableGap - p.pivotOffset;
+  const b = boards.left;
+  const xs = [b.start, ...b.steps].flatMap(s => (s.length === 4 ? [s[0], s[2]] : [s[0]]));
+  return Math.max(...xs.map(x => Math.abs(x - p.cableGap + ax))) + OUTER_MARGIN;
 }
 
-/** Anhebung von Mitte und Kippachse bei Winkel w (Bogenmaß), Außenkante auf dem Tisch. */
-function anhebungBei(w, p) {
-  return Math.max(0, auslage(p) * Math.sin(w) - (p.boden + p.unterraum) * (1 - Math.cos(w)));
+/** Lift of the middle and the pivot axis at angle w (radians), outer edge on the desk. */
+function liftAt(w, p) {
+  return Math.max(0, reach(p) * Math.sin(w) - (p.floor + p.underSpace) * (1 - Math.cos(w)));
 }
 
 /**
- * Tenting-Winkel (°), bei dem Mitte und Innenkanten um die Keildicke höher liegen als bei
- * der flachen Tastatur und die Außenkanten den Tisch gerade berühren.
+ * Tenting angle (°) at which the middle and the inner edges sit higher than on the flat
+ * keyboard by the wedge thickness, and the outer edges just touch the desk.
  */
-export function tentingWinkel(p) {
-  if (!(p.keil > 0)) return 0;
+export function tentingAngle(p) {
+  if (!(p.wedge > 0)) return 0;
   let [lo, hi] = [0, Math.PI / 3];
   for (let i = 0; i < 60; i++) {
     const m = (lo + hi) / 2;
-    if (anhebungBei(m, p) < p.keil) lo = m;
+    if (liftAt(m, p) < p.wedge) lo = m;
     else hi = m;
   }
   return (((lo + hi) / 2) * 180) / Math.PI;
 }
 
-/** Anhebung beim Tenting: entspricht der Keildicke in der Mitte. */
-export function anhebung(p) {
+/** Lift caused by tenting: equal to the wedge thickness at the middle. */
+export function lift(p) {
   if (!(p.tenting > 0)) return 0;
-  return anhebungBei((p.tenting * Math.PI) / 180, p);
+  return liftAt((p.tenting * Math.PI) / 180, p);
 }
 
-/** Höhe der Platinenunterseite über dem Tisch (Mitte und Kippachse der Hälften). */
-export const platinenHoehe = p => p.boden + p.unterraum + anhebung(p);
+/** Height of the board bottom above the desk (middle board and pivot axis of the halves). */
+export const boardHeight = p => p.floor + p.underSpace + lift(p);
 
 /**
- * Schritte, die eine Platine aus ihrem Rahmen an ihren Platz bringen.
- * Ein Schritt ist { t: [x, y, z] } oder { r: ['x' | 'y' | 'z', grad] }.
- * @param {'links' | 'mitte' | 'rechts'} region
+ * Steps that move a board from its own frame into place.
+ * A step is { t: [x, y, z] } or { r: ['x' | 'y' | 'z', degrees] }.
+ * @param {'left' | 'middle' | 'right'} region
  */
-export function lage(region, p) {
-  const z = platinenHoehe(p);
-  if (region === 'mitte') {
-    const d = platinenstaerke / 2;
+export function placement(region, p) {
+  const z = boardHeight(p);
+  if (region === 'middle') {
+    const d = boardThickness / 2;
     return [{ t: [0, 0, -d] }, { r: ['y', 180] }, { t: [0, 0, d + z] }];
   }
-  const { phi, ax, verschiebung } = haelftenKippung(region, p);
+  const { phi, axisX, shift } = halfTilt(region, p);
   return [
-    { t: [verschiebung, 0, z] },
-    { t: [-ax, 0, -z] },
+    { t: [shift, 0, z] },
+    { t: [-axisX, 0, -z] },
     { r: ['y', phi] },
-    { t: [ax, 0, z] },
+    { t: [axisX, 0, z] },
   ];
 }
 
 /**
- * Kippung einer Hälfte: Winkel um Y (phi), Lage der Kippachse in X (ax, auf Höhe der
- * Platinenunterseite) und Verschiebung nach außen um den Kabelspalt.
- * @param {'links' | 'rechts'} region
+ * Tilt of a half: angle about Y (phi), position of the pivot axis in X (axisX, at the
+ * height of the board bottom) and outward shift by the cable gap.
+ * @param {'left' | 'right'} region
  */
-export function haelftenKippung(region, p) {
-  const seite = region === 'links' ? -1 : 1;
-  // Kippachse: parallel zur Innenkante auf Höhe der Platinenunterseite, von der
-  // (verschobenen) Innenkante um kippachse zur Mitte hin versetzt. Bei 0 liegt die
-  // Innenkante der Hälfte auf gleicher Höhe wie die Mittelplatine. Positiver Winkel um Y
-  // senkt bei der rechten Hälfte die Außenseite (+X), bei der linken entsprechend negativ.
+export function halfTilt(region, p) {
+  const side = region === 'left' ? -1 : 1;
+  // Pivot axis: parallel to the inner edge at the height of the board bottom, offset from
+  // the (shifted) inner edge toward the middle by pivotOffset. At 0 the inner edge of the
+  // half sits at the same height as the middle board. A positive angle about Y lowers the
+  // outer side (+X) of the right half; the left half uses the negative angle.
   return {
-    phi: seite * p.tenting,
-    ax: seite * (INNENKANTE_X + p.kabelspalt - p.kippachse),
-    verschiebung: seite * p.kabelspalt,
+    phi: side * p.tenting,
+    axisX: side * (INNER_EDGE_X + p.cableGap - p.pivotOffset),
+    shift: side * p.cableGap,
   };
 }
 
-/** Wendet die Schritte auf FluidCAD-Körper an. Leere Schritte entfallen. */
-export function platzieren(schritte, ...koerper) {
-  for (const s of schritte) {
-    if (s.t && s.t.some(v => Math.abs(v) > 1e-9)) translate(s.t[0], s.t[1], s.t[2], ...koerper);
-    if (s.r && Math.abs(s.r[1]) > 1e-9) rotate(s.r[0], s.r[1], ...koerper);
+/** Applies the steps to FluidCAD bodies. Empty steps are skipped. */
+export function place(steps, ...bodies) {
+  for (const s of steps) {
+    if (s.t && s.t.some(v => Math.abs(v) > 1e-9)) translate(s.t[0], s.t[1], s.t[2], ...bodies);
+    if (s.r && Math.abs(s.r[1]) > 1e-9) rotate(s.r[0], s.r[1], ...bodies);
   }
 }
 
-/** Dieselben Schritte als reine Rechnung für einen Punkt. */
-export function punkt(schritte, p) {
+/** The same steps as plain math for a single point. */
+export function point(steps, p) {
   let [x, y, z] = p;
-  for (const s of schritte) {
+  for (const s of steps) {
     if (s.t) {
       x += s.t[0];
       y += s.t[1];
@@ -144,22 +143,22 @@ export function punkt(schritte, p) {
 }
 
 /**
- * Lage eines KiCad-3D-Modells im Rahmen seiner Platine (z = 0 Unterseite).
- * KiCad dreht das Modell um X, Y, Z, verschiebt es um offset (Y nach oben) und setzt es
- * auf die Oberseite. Auf der Unterseite wird es zusätzlich um Y gespiegelt gedreht.
- * @param {{ mitte: number[], drehung: number, seite: string }} bauteil
- * @param {{ versatz: number[], drehung: number[] }} modell
+ * Placement of a KiCad 3D model in the frame of its board (z = 0 bottom).
+ * KiCad rotates the model about X, Y, Z, moves it by offset (Y up) and puts it on the top
+ * side. On the bottom side it is additionally flipped about Y.
+ * @param {{ center: number[], rotation: number, side: string }} component
+ * @param {{ offset: number[], rotation: number[] }} model
  */
-export function modellLage(bauteil, modell) {
-  const [rx, ry, rz] = modell.drehung;
-  const schritte = [];
-  if (rx) schritte.push({ r: ['x', rx] });
-  if (ry) schritte.push({ r: ['y', ry] });
-  if (rz) schritte.push({ r: ['z', rz] });
-  schritte.push({ t: modell.versatz });
-  if (bauteil.seite === 'unten') schritte.push({ r: ['y', 180] });
-  else schritte.push({ t: [0, 0, platinenstaerke] });
-  schritte.push({ r: ['z', bauteil.drehung] });
-  schritte.push({ t: [bauteil.mitte[0], bauteil.mitte[1], 0] });
-  return schritte;
+export function modelPlacement(component, model) {
+  const [rx, ry, rz] = model.rotation;
+  const steps = [];
+  if (rx) steps.push({ r: ['x', rx] });
+  if (ry) steps.push({ r: ['y', ry] });
+  if (rz) steps.push({ r: ['z', rz] });
+  steps.push({ t: model.offset });
+  if (component.side === 'bottom') steps.push({ r: ['y', 180] });
+  else steps.push({ t: [0, 0, boardThickness] });
+  steps.push({ r: ['z', component.rotation] });
+  steps.push({ t: [component.center[0], component.center[1], 0] });
+  return steps;
 }

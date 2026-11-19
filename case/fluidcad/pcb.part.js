@@ -1,45 +1,45 @@
 import { circle, color, cut, extrude, part, plane, sketch } from 'fluidcad/core';
-import { geschlossen, rechteck, trace } from './kontur.js';
-import { bohrungen, platinenstaerke, schalter, stege, teile } from './pcb-referenz.js';
+import { closed, rectangle, trace } from './outline.js';
+import { boardThickness, boards, holes, switches, tabs } from './pcb-reference.js';
 
-// Physische Referenz: das Panel nach dem Trennen, ohne Bauteile.
-// Alle Maße stammen aus pcb-referenz.js, das werkzeuge/kicad_referenz.py aus KiCad erzeugt.
+// Physical reference: the panel after separating, without components.
+// All dimensions come from pcb-reference.js, which tools/kicad_reference.py generates from KiCad.
 
-const farben = {
-  links: '#2f7d4f',
-  verbinderLinks: '#b8862b',
-  mitte: '#2b5fa8',
-  verbinderRechts: '#b8862b',
-  rechts: '#2f7d4f',
+const colors = {
+  left: '#2f7d4f',
+  connectorLeft: '#b8862b',
+  middle: '#2b5fa8',
+  connectorRight: '#b8862b',
+  right: '#2f7d4f',
 };
 
-export const pcb = part('Molekula · PCB getrennt', () => {
-  for (const [name, teil] of Object.entries(teile)) {
-    const umriss = sketch('xy', () => {
-      trace(teil.start, teil.schritte);
-    }).name(`${teil.titel} · Edge.Cuts`);
-    const platte = extrude(platinenstaerke, umriss).new().name(teil.titel);
-    color(farben[name], platte);
+export const pcb = part('Molekula · PCB separated', () => {
+  for (const [name, b] of Object.entries(boards)) {
+    const outline = sketch('xy', () => {
+      trace(b.start, b.steps);
+    }).name(`${b.title} · Edge.Cuts`);
+    const plate = extrude(boardThickness, outline).new().name(b.title);
+    color(colors[name], plate);
   }
 
-  sketch(plane('xy', { offset: platinenstaerke }), () => {
-    for (const b of bohrungen) circle(b.mitte, b.bohrung).name(`${b.ref} · Ø${b.bohrung}`);
-  }).name('Bohrungen für M2-Einpressmuttern');
-  cut().name('Bohrungen durchgehend');
+  sketch(plane('xy', { offset: boardThickness }), () => {
+    for (const h of holes) circle(h.center, h.drill).name(`${h.ref} · Ø${h.drill}`);
+  }).name('Holes for M2 press-fit nuts');
+  cut().name('Holes through');
 
-  sketch(plane('xy', { offset: platinenstaerke }), () => {
-    for (const s of schalter) {
-      // Choc-Ausschnitt 13,8 mm als Lagehilfe, Raster 18 x 17 mm.
-      geschlossen(rechteck(s.mitte, 13.8, 13.8, s.drehung)).forEach(k => k.guide());
-      geschlossen(rechteck(s.mitte, 18, 17, s.drehung)).forEach(k => k.guide());
+  sketch(plane('xy', { offset: boardThickness }), () => {
+    for (const s of switches) {
+      // Choc cut-out 13.8 mm as a placement guide, 18 x 17 mm grid.
+      closed(rectangle(s.center, 13.8, 13.8, s.rotation)).forEach(k => k.guide());
+      closed(rectangle(s.center, 18, 17, s.rotation)).forEach(k => k.guide());
     }
-  }).name('Schalterpositionen · Choc 13,8 / Raster 18 x 17');
+  }).name('Switch positions · Choc 13.8 / grid 18 x 17');
 
   sketch('xy', () => {
-    for (const steg of Object.values(stege)) {
-      const [x0, y0] = steg.von;
-      const [x1, y1] = steg.bis;
-      geschlossen([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]).forEach(k => k.guide());
+    for (const tab of Object.values(tabs)) {
+      const [x0, y0] = tab.from;
+      const [x1, y1] = tab.to;
+      closed([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]).forEach(k => k.guide());
     }
-  }).name('Entfernte Stege des Panels');
+  }).name('Removed panel tabs');
 });
