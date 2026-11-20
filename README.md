@@ -7,7 +7,7 @@ Molekula is a split ergonomic keyboard with 19 keys per side, a minY grid of 19 
 | [pcb/](pcb/) | KiCad project, schematic, board and library tables for the 38-key fork |
 | [production/](production/) | Gerber and drill data as a manufacturing package, plus BOM and placement data for SMD assembly |
 | [case/](case/) | Both case variants: the split case with magnetic connectors and the FluidCAD model of the unibody case, plus design concepts |
-| [keycaps/](keycaps/) | Sculpted Choc keycaps and a separate thumb model |
+| [keycaps/](keycaps/) | Sculpted Choc keycaps in four profiles, built to print on edge with an integrated support |
 | [images/](images/) | Renders of the case variants |
 
 ## Case variants
