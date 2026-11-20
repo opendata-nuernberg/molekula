@@ -2,7 +2,18 @@
 
 Choc v1 keycaps for the minY grid of 19 × 16 mm, and a knob for the encoder. Both are modelled in FluidCAD and fully parametric: [keycap.part.js](../case/fluidcad/keycap.part.js) and [encoder-knob.part.js](../case/fluidcad/encoder-knob.part.js). The caps are rebuilt from the sculpted caps that were printed first. Those are kept below as the original, with the geometry measured from them.
 
-![Finger cap, home caps with hexagon and with dots, the three thumb caps in the eye colours, and the knob](../images/keycaps-and-knob.png)
+The caps and the knob come in two themes. The geometry is the same in both, apart from the homing mark and the eye on the knob:
+
+| Theme | Caps | Home caps (index finger) | Thumb caps | Knob |
+| --- | --- | --- | --- | --- |
+| **Tunic** | beige `#d8c9a3`, like the case | raised hexagon, like the eyes on the middle cover | the eye colours blue, pink and green | beige, with a blue eye inlay |
+| **Neutral grey** | grey `#8d9093` | three dots | grey | grey, plain top without an eye |
+
+![Tunic theme: finger cap, home cap with the hexagon, the three thumb caps in the eye colours, and the knob with its eye](../images/keycaps-tunic.png)
+
+![Neutral grey theme: finger cap, home cap with three dots, three thumb caps, and the plain knob](../images/keycaps-grey.png)
+
+The themes are defined in [themes.js](../case/fluidcad/themes.js). The parts use the Tunic theme as their defaults.
 
 ## Parametric keycaps
 
@@ -18,17 +29,23 @@ Both surfaces are built the same way. An arc is revolved about an axis that lies
 
 The chamfers stay sharp. Their edges are 135° and printing softens them a little. Rounding them failed in OpenCascade: both a fillet over the chamfer edges and a chamfer along rounded footprint corners left degenerate faces, which meshed into tens of thousands of slivers with open edges, or left the top surface not fully cut. With the option off, the cap gets the round edges of the original caps (corner radius 3 mm, top edge 2 mm).
 
-Colours: the case is beige, so all finger caps are beige. The index finger home caps carry the mark in the same colour. The three thumb caps per half take the eye colours blue, pink and green. Each cap is one colour, since a cap printed on edge would need a filament change in almost every layer for a coloured detail on its top.
+Each cap is one colour, since a cap printed on edge would need a filament change in almost every layer for a coloured detail on its top. The home caps carry their mark in the cap colour.
 
-| Profile | Per half | Total | Colour |
-| --- | --- | --- | --- |
-| Finger | 15 | 30 | beige |
-| Home (index finger) | 1 | 2 | beige |
-| Thumb | 3 | 6 | blue, pink, green |
+| Profile | Per half | Total | Tunic | Neutral grey |
+| --- | --- | --- | --- | --- |
+| Finger | 15 | 30 | beige | grey |
+| Home (index finger) | 1 | 2 | beige, hexagon | grey, three dots |
+| Thumb | 3 | 6 | blue, pink, green | grey |
 
 ## Encoder knob
 
-A hexagonal knob like the eyes on the middle cover. Its top carries the same eye: a 0.6 mm colour inlay with an open centre and a recessed outline (blue by default; **Eye as colour inlay** off leaves only the outline). The knob prints upside down on its top, so the eye sits in the first three layers.
+A hexagonal knob like the eyes on the middle cover. **Eye on the top** chooses what its top carries:
+
+- **Colour inlay** (Tunic): the same eye as on the cover, a 0.6 mm colour inlay with an open centre and a recessed outline, blue by default.
+- **Recessed outline:** the outline alone, in the knob colour.
+- **None** (neutral grey): a plain top.
+
+The knob prints upside down on its top, so an eye sits in the first three layers.
 
 - 29 mm across the corners (25 mm across the flats), 8.4 mm high, 1 mm above the middle cover. The eye grows with the knob. The two lower sides reach about 1 mm past the front edge of the cover, and the nearest key is 14 mm away.
 - D bore for the measured shaft: Ø 6 mm, 4.5 mm from the flat to the opposite side, tip 7.44 mm above the cover, flat 7 mm long. Clearance 0.15 mm per side, a 0.5 mm lead-in at the entrance and 0.4 mm of room above the tip.
@@ -37,8 +54,9 @@ A hexagonal knob like the eyes on the middle cover. Its top carries the same eye
 ## Print files
 
 ```sh
-node case/fluidcad/tools/keycap-files.mjs          # home caps with the hexagon
-node case/fluidcad/tools/keycap-files.mjs dots     # home caps with three dots
+node case/fluidcad/tools/keycap-files.mjs          # both themes
+node case/fluidcad/tools/keycap-files.mjs tunic    # only the Tunic theme
+node case/fluidcad/tools/keycap-files.mjs grey     # only the neutral grey theme
 ```
 
 For printing by object (OrcaSlicer: print sequence "by object", which gives cleaner caps than printing all at once), the caps come in groups. In each group the caps stand in a ring, top surfaces outwards, and the thin support frames are joined in the middle, so a group is one stable object:
@@ -54,18 +72,22 @@ A full set is seven groups:
 | Finger | hexagon of 6 | 4 | finger caps for the keys around the home rows |
 | Thumbs | hexagon of 6 | 1 | the thumb caps |
 
-![The seven print groups on one plate, the thumb group in an accent colour](../images/keycaps-print-groups.png)
+![The seven print groups of the Tunic theme on one plate, the thumb group in blue](../images/keycaps-print-groups.png)
 
-All seven in beige make a complete set. An accent colour is a matter of printing one group in another filament, for example the thumbs or the home rows, even on a printer with a single colour. For caps in many colours, print the single caps.
+All seven groups in the cap colour make a complete set. An accent colour is a matter of printing one group in another filament, for example the thumbs or the home rows, even on a printer with a single colour.
 
-The script writes into `case/fluidcad/print/keycaps/`:
+- **Tunic:** six groups in beige and the thumb group in one eye colour. For the thumbs in all three eye colours, print the single thumb cap twice in each colour instead of the thumb group.
+- **Neutral grey:** all seven groups in grey.
+
+The script writes one folder per theme, `case/fluidcad/print/keycaps/tunic/` and `case/fluidcad/print/keycaps/grey/`:
 
 | File | Contents |
 | --- | --- |
-| `keycaps-set.3mf` | The seven groups as separate objects on one plate (256 × 256 mm): open it, set the print sequence to "by object", and assign filaments per object |
-| `keycap-group-home-row.stl`, `keycap-group-finger.stl`, `keycap-group-thumbs.stl` | One group each |
-| `keycap-finger`, `keycap-home-<mark>`, `keycap-thumb` | Single caps, as STEP and STL |
-| `encoder-knob.stl`, `encoder-knob-eye.stl` | Knob and eye inlay, lined up. Load both as one object with two parts. |
+| `keycaps-set.3mf` | The seven groups as separate objects on one plate (256 × 256 mm), their colour in the object name: open it, set the print sequence to "by object", and assign filaments per object |
+| `keycap-group-home-row.stl`, `keycap-group-finger.stl`, `keycap-group-thumbs.stl` | One group each, the home row with the theme's mark |
+| `keycap-finger`, `keycap-home-hexagon` or `keycap-home-dots`, `keycap-thumb` | Single caps, as STEP and STL |
+| `encoder-knob.stl` | The knob |
+| `encoder-knob-eye.stl`, `encoder-knob-with-eye.step` | Tunic only: the eye inlay, lined up with the knob. Load knob and eye as one object with two parts. |
 
 The settings of the original caps should work for the new ones too: 0.12 mm layers, 4 walls, supports only where painted.
 

@@ -3,9 +3,11 @@ import { edge } from 'fluidcad/filters';
 import { boardHeight, layoutParams } from './layout.js';
 import { boardThickness, components } from './pcb-reference.js';
 import { ENCODER, MEASURED, rectBodies, shellParams, sketchPlane } from './shell.js';
+import { THEMES } from './themes.js';
 
 // Knob for the EC11 encoder in the middle: a hexagon like the eyes of the guardian motif,
-// with the same eye on its top, as a colour inlay or as a plain recessed outline.
+// with the same eye on its top, as a colour inlay or as a plain recessed outline, or with a
+// plain top (the neutral grey theme).
 //
 // It sits on the D-shaft and floats `gap` above the middle cover. The shaft (MEASURED and
 // ENCODER in shell.js) was measured on the printed case: its tip is 7.44 mm above the cover,
@@ -72,9 +74,16 @@ export const encoderKnob = part('Molekula · Encoder knob', () => {
     min: 0, max: 0.3, step: 0.05, group: 'Shaft', description: 'How far the ribs reach into the shaft; 0 leaves them out.',
   });
   const roof = param('Top thickness above the shaft (mm)', 1.6, 'number', { min: 1, max: 4, step: 0.1 });
-  const inlay = param('Eye as colour inlay', true, 'checkbox', { group: 'Look' });
-  const knobColor = param('Knob colour', '#d8c9a3', 'color', { group: 'Look' });
-  const eyeColor = param('Eye colour', '#3aa7e6', 'color', { group: 'Look' });
+  const eyeStyle = param('Eye on the top', THEMES.tunic.eye, 'select', {
+    group: 'Look',
+    options: [
+      { label: 'Colour inlay', value: 'inlay' },
+      { label: 'Recessed outline', value: 'outline' },
+      { label: 'None (plain top)', value: 'none' },
+    ],
+  });
+  const knobColor = param('Knob colour', THEMES.tunic.knob, 'color', { group: 'Look' });
+  const eyeColor = param('Eye colour', THEMES.tunic.eyeColour, 'color', { group: 'Look' });
 
   // Heights in the frame of the middle board (z = 0 its underside), as in top-shell.part.js.
   const cover = boardThickness + s.coverHeight;
@@ -130,8 +139,10 @@ export const encoderKnob = part('Molekula · Encoder knob', () => {
   const eyeRadius = EYE.radius * scale;
   const dot = EYE.dot * scale;
   const pocketRadius = eyeRadius + EYE.groove / Math.cos(Math.PI / 6);
-  rectBodies('middle', p, [{ corners: hexagon(at, pocketRadius) }], z1 - EYE.depth, z1 + 1, 'Knob · eye pocket', { remove: [knob] });
-  if (inlay) {
+  if (eyeStyle !== 'none') {
+    rectBodies('middle', p, [{ corners: hexagon(at, pocketRadius) }], z1 - EYE.depth, z1 + 1, 'Knob · eye pocket', { remove: [knob] });
+  }
+  if (eyeStyle === 'inlay') {
     const centre = sketchPlane('middle', p, z1 - EYE.depth - 0.05);
     sketch(centre.plane, () => circle([at[0] + centre.dx, at[1] + centre.dy], dot)).name('Knob · eye centre · sketch');
     extrude(EYE.depth + 0.05).add().scope(knob).name('Knob · eye centre');
@@ -140,7 +151,7 @@ export const encoderKnob = part('Molekula · Encoder knob', () => {
     sketch(hole.plane, () => circle([at[0] + hole.dx, at[1] + hole.dy], dot)).name('Knob · eye hole · sketch');
     extrude(EYE.depth + 2).remove().scope(eye).name('Knob · eye hole');
     color(eyeColor, eye);
-  } else {
+  } else if (eyeStyle === 'outline') {
     rectBodies('middle', p, [{ corners: hexagon(at, eyeRadius) }], z1 - EYE.depth - 0.05, z1, 'Knob · eye (plain)', { add: [knob] });
   }
 

@@ -4,7 +4,12 @@
  *
  * Run from the repository root (FluidCAD must be linked under case/fluidcad/node_modules):
  *
- *     node case/fluidcad/tools/keycap-files.mjs [hexagon|dots]   # homing mark, default hexagon
+ *     node case/fluidcad/tools/keycap-files.mjs [tunic|grey]   # one theme, default both
+ *
+ * Themes (themes.js): Tunic has beige caps, a hexagon on the home caps, thumbs in the eye
+ * colours and a knob with a blue eye inlay; neutral grey has grey caps, three dots on the
+ * home caps and a knob without an eye. The geometry differs only in the homing mark and the
+ * eye; the colours go into the names of the 3MF objects.
  *
  * The caps are rendered from keycap.part.js in a private FluidCAD server (an open editor is
  * not affected) and turned into print orientation: standing on the front edge, top surface
@@ -22,25 +27,28 @@
  *   4 × finger: hexagon of 6 finger caps, the keys around the home rows
  *   1 × thumbs: hexagon of the 6 thumb caps
  *
- * Output in case/fluidcad/print/keycaps/ (not tracked in Git), binary STL:
+ * Output in case/fluidcad/print/keycaps/<theme>/ (not tracked in Git), binary STL:
  *   keycap-group-home-row, keycap-group-finger, keycap-group-thumbs (.stl): one group each
  *   keycaps-set.3mf: the seven groups as separate objects on one plate
  *   keycap-finger, keycap-home-<mark>, keycap-thumb (.step/.stl): single caps, for printing
  *     each cap in its own colour
- *   encoder-knob.step/.stl, encoder-knob-eye.stl, encoder-knob-with-eye.step
+ *   encoder-knob.step/.stl; with an eye inlay also encoder-knob-eye.stl and
+ *     encoder-knob-with-eye.step
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { THEMES } from '../themes.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.resolve(HERE, '..');
-const OUTPUT = path.join(WORKSPACE, 'print', 'keycaps');
+const PRINT = path.join(WORKSPACE, 'print', 'keycaps');
+let OUTPUT = PRINT;
 
-const mark = process.argv[2] ?? 'hexagon';
-if (!['hexagon', 'dots'].includes(mark)) {
-  console.error('Give the homing mark as hexagon or dots');
+const chosen = process.argv[2] ? [process.argv[2]] : Object.keys(THEMES);
+if (!chosen.every(t => t in THEMES)) {
+  console.error(`Give the theme as one of: ${Object.keys(THEMES).join(', ')}`);
   process.exit(1);
 }
 // Square of four (the original clusters): pocket floor of each cap `distance` from the
@@ -364,53 +372,75 @@ function write3mf(name, groups, plate = [256, 256]) {
 }
 const copies = (x, n) => Array(n).fill(x);
 
-fs.mkdirSync(OUTPUT, { recursive: true });
-
 // Key frame -> print orientation: turned by 90° about X, the front edge (-Y) onto the bed.
 // The key's Z becomes -Y: the frame of the integrated support ends at y = 8 (SUPPORT in
 // keycap.part.js), the caps are 18.3 mm wide.
 const FRAME_END = 8;
 const WIDTH = 18.3;
 const standUp = rotation([1, 0, 0], Math.PI / 2);
-const caps = {};
-for (const [name, values] of [
-  ['finger', { Profile: 'finger', 'Homing mark': 'none' }],
-  [`home-${mark}`, { Profile: 'finger', 'Homing mark': mark }],
-  ['thumb', { Profile: 'thumb', 'Homing mark': 'none' }],
-]) {
+const flip = rotation([1, 0, 0], Math.PI);
+const COLOUR_NAMES = { '#d8c9a3': 'beige', '#3aa7e6': 'blue', '#e5458f': 'pink', '#8fcf3e': 'green', '#8d9093': 'grey' };
+const colourName = c => COLOUR_NAMES[c.toLowerCase()] ?? c;
+
+/** One cap in print orientation: X centred, Y = 0 at the pocket floor, on the bed. */
+async function cap(values) {
   const found = readSolids(await render('keycap.part.js', values));
-  if (found.length !== 1) throw new Error(`keycap ${name}: ${found.length} solids instead of one`);
-  // Turned onto the front edge; X stays centred, Y = 0 stays at the pocket floor.
+  if (found.length !== 1) throw new Error(`keycap: ${found.length} solids instead of one`);
   const b = bounds(moved(found[0], standUp));
-  caps[name] = write(moved(found[0], translation(0, 0, -b.lo[2]).Multiplied(standUp)), `keycap-${name}`);
+  return moved(found[0], translation(0, 0, -b.lo[2]).Multiplied(standUp));
 }
 
-// Print groups. Caps in print orientation: pocket floor at y = 0, frame end at y = FRAME_END.
-const homeRow = group([...copies(caps.finger, 3), caps[`home-${mark}`]], FRAME_END, WIDTH);
-const finger = group(copies(caps.finger, 6), FRAME_END, WIDTH);
-const thumbs = group(copies(caps.thumb, 6), FRAME_END, WIDTH);
-writeGroup('keycap-group-home-row', homeRow);
-writeGroup('keycap-group-finger', finger);
-writeGroup('keycap-group-thumbs', thumbs);
-write3mf('keycaps-set', [
-  { name: 'Finger 1', sets: finger }, { name: 'Finger 2', sets: finger }, { name: 'Home row left', sets: homeRow },
-  { name: 'Finger 3', sets: finger }, { name: 'Finger 4', sets: finger }, { name: 'Home row right', sets: homeRow },
-  { name: 'Thumbs', sets: thumbs },
-]);
+// The finger and thumb caps are the same in every theme; only the home caps differ.
+const plain = {
+  finger: await cap({ Profile: 'finger', 'Homing mark': 'none' }),
+  thumb: await cap({ Profile: 'thumb', 'Homing mark': 'none' }),
+};
+const homes = {};
 
-// Knob: the larger solid is the knob, the smaller one the eye.
-const knobSolids = readSolids(await render('encoder-knob.part.js', {})).sort((a, b) => volume(b) - volume(a));
-if (knobSolids.length < 1 || knobSolids.length > 2) throw new Error(`knob: ${knobSolids.length} solids`);
-const flip = rotation([1, 0, 0], Math.PI);
-const knob = placed(knobSolids[0], flip);
-write(knob.shape, 'encoder-knob');
-if (knobSolids[1]) {
-  const eye = moved(knobSolids[1], knob.move);
-  write(eye, 'encoder-knob-eye', { step: false });
-  const w = new oc.STEPControl_Writer();
-  w.Transfer(compound([knob.shape, eye]), oc.STEPControl_StepModelType.STEPControl_AsIs, true, new oc.Message_ProgressRange());
-  w.Write('/out.step');
-  fs.writeFileSync(path.join(OUTPUT, 'encoder-knob-with-eye.step'), oc.FS.readFile('/out.step'));
-  console.log('encoder-knob-with-eye: knob and eye in one STEP');
+for (const id of chosen) {
+  const theme = THEMES[id];
+  OUTPUT = path.join(PRINT, id);
+  fs.mkdirSync(OUTPUT, { recursive: true });
+  console.log(`\n${theme.title} -> ${path.relative(process.cwd(), OUTPUT)}`);
+
+  homes[theme.mark] ??= await cap({ Profile: 'finger', 'Homing mark': theme.mark });
+  const caps = {
+    finger: write(plain.finger, 'keycap-finger'),
+    home: write(homes[theme.mark], `keycap-home-${theme.mark}`),
+    thumb: write(plain.thumb, 'keycap-thumb'),
+  };
+
+  // Print groups. Caps in print orientation: pocket floor at y = 0, frame end at y = FRAME_END.
+  const homeRow = group([...copies(caps.finger, 3), caps.home], FRAME_END, WIDTH);
+  const finger = group(copies(caps.finger, 6), FRAME_END, WIDTH);
+  const thumbs = group(copies(caps.thumb, 6), FRAME_END, WIDTH);
+  writeGroup('keycap-group-home-row', homeRow);
+  writeGroup('keycap-group-finger', finger);
+  writeGroup('keycap-group-thumbs', thumbs);
+  const base = colourName(theme.caps);
+  write3mf('keycaps-set', [
+    { name: `Finger 1 (${base})`, sets: finger }, { name: `Finger 2 (${base})`, sets: finger },
+    { name: `Home row left (${base})`, sets: homeRow },
+    { name: `Finger 3 (${base})`, sets: finger }, { name: `Finger 4 (${base})`, sets: finger },
+    { name: `Home row right (${base})`, sets: homeRow },
+    { name: `Thumbs (${colourName(theme.thumbs[0])})`, sets: thumbs },
+  ]);
+
+  // Knob: the larger solid is the knob, the smaller one the eye inlay, if there is one.
+  const knobSolids = readSolids(await render('encoder-knob.part.js', {
+    'Eye on the top': theme.eye, 'Knob colour': theme.knob, 'Eye colour': theme.eyeColour,
+  })).sort((a, b) => volume(b) - volume(a));
+  if (knobSolids.length !== (theme.eye === 'inlay' ? 2 : 1)) throw new Error(`knob: ${knobSolids.length} solids`);
+  const knob = placed(knobSolids[0], flip);
+  write(knob.shape, 'encoder-knob');
+  if (knobSolids[1]) {
+    const eye = moved(knobSolids[1], knob.move);
+    write(eye, 'encoder-knob-eye', { step: false });
+    const w = new oc.STEPControl_Writer();
+    w.Transfer(compound([knob.shape, eye]), oc.STEPControl_StepModelType.STEPControl_AsIs, true, new oc.Message_ProgressRange());
+    w.Write('/out.step');
+    fs.writeFileSync(path.join(OUTPUT, 'encoder-knob-with-eye.step'), oc.FS.readFile('/out.step'));
+    console.log('encoder-knob-with-eye: knob and eye in one STEP');
+  }
 }
 process.exit(0);

@@ -1,6 +1,7 @@
 import { arc, axis, chamfer, circle, color, extrude, fillet, fuse, line, param, part, plane, revolve, select, sketch, sphere } from 'fluidcad/core';
 import { edge } from 'fluidcad/filters';
 import { closed } from './outline.js';
+import { THEMES } from './themes.js';
 
 // Choc v1 keycap for the minY grid (19 × 16 mm), rebuilt from the measured caps in
 // keycaps/README.md and made fully parametric.
@@ -136,7 +137,7 @@ export const keycap = part('Molekula · Keycap', () => {
     min: 0, max: 1.5, step: 0.05, group: 'Thumb', description: 'Convex along Y: drop 6 mm from the centre.',
   });
   const support = param('Integrated print support', true, 'checkbox', { group: 'Print' });
-  const capColor = param('Colour', '#d8c9a3', 'color', { group: 'Print' });
+  const capColor = param('Colour', THEMES.tunic.caps, 'color', { group: 'Print' });
 
   const thumb = profile === 'thumb';
   const h = thumb ? thumbHeight : height;

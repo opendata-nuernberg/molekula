@@ -7,7 +7,7 @@ Molekula is a split ergonomic keyboard with 19 keys per side, a minY grid of 19 
 | [pcb/](pcb/) | KiCad project, schematic, board and library tables for the 38-key fork |
 | [production/](production/) | Gerber and drill data as a manufacturing package, plus BOM and placement data for SMD assembly |
 | [case/](case/) | Both case variants: the split case with magnetic connectors and the FluidCAD model of the unibody case, plus design concepts |
-| [keycaps/](keycaps/) | Parametric Choc keycaps (flat finger caps, saddle thumb caps) and the encoder knob, both printed without slicer supports, plus the original sculpted caps |
+| [keycaps/](keycaps/) | Parametric Choc keycaps (flat finger caps, saddle thumb caps) and the encoder knob in a Tunic and a neutral grey theme, both printed without slicer supports, plus the original sculpted caps |
 | [images/](images/) | Renders of the case variants |
 
 ## Case variants
@@ -39,7 +39,7 @@ On top of the middle cover sits a small motif: three hexagonal eyes in blue, pin
 
 ![Middle cover with the three eye inlays](images/unibody-cover-eyes.png)
 
-The encoder gets a hexagonal knob with an eye on top, 1 mm above the cover; it is described with the keycaps in [keycaps/](keycaps/), together with its print files.
+The encoder gets a hexagonal knob, 1 mm above the cover. In the Tunic theme it has an eye on top, and in the neutral grey theme its top is plain. It is described with the keycaps in [keycaps/](keycaps/), together with its print files.
 
 Only three M2 screws hold the case together. They go from below through the bottom shell and the holes H5–H7 of the MCU board into M2 heat-set inserts (Ø 3.2 mm hole, 4.5 mm deep) in the middle cover. The access holes from the desk side are 11 mm wide, enough for a screwdriver shaft of 10 mm. M2 × 8 screws reach 4.3 mm into the inserts. Nothing is glued.
 
