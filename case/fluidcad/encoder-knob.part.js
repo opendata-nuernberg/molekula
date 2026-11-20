@@ -22,9 +22,10 @@ const TIP_ROOM = 0.4;
 // Crush ribs on the round side of the bore (angles from the flat, which faces +X), and the
 // lead-in at the entrance where they are left out.
 const RIBS = { angles: [120, 180, 240], width: 0.8, leadIn: 1 };
-// Eye on the top: inlay radius (corner, pointy top), recessed outline around it, open
-// centre, depth (three layers of 0.2 mm). Scaled down from the eyes on the cover.
-const EYE = { radius: 4.2, groove: 0.6, dot: 2, depth: 0.6 };
+// Eye on the top, for a knob 19 mm across the corners: inlay radius (corner, pointy top),
+// recessed outline around it, open centre, depth (three layers of 0.2 mm). Scaled down from
+// the eyes on the cover; radius and centre grow with the knob.
+const EYE = { size: 19, radius: 4.2, groove: 0.6, dot: 2, depth: 0.6 };
 
 /** Regular hexagon (pointy top) with rounded corners, drawn into the current sketch. */
 function roundedHexagon(cx, cy, r, rc) {
@@ -61,7 +62,7 @@ const hexagon = (at, r) => [...Array(6)].map((_, i) => {
 export const encoderKnob = part('Molekula · Encoder knob', () => {
   const p = layoutParams();
   const s = shellParams();
-  const size = param('Knob size across corners (mm)', 19, 'number', { min: 12, max: 26, step: 0.5 });
+  const size = param('Knob size across corners (mm)', 29, 'number', { min: 12, max: 36, step: 0.5 });
   const cornerRadius = param('Knob corner radius (mm)', 1.5, 'number', { min: 0.3, max: 4, step: 0.1 });
   const gap = param('Gap above the cover (mm)', 1, 'number', { min: 0.3, max: 3, step: 0.1 });
   const clearance = param('Bore clearance (mm)', 0.15, 'number', {
@@ -125,19 +126,22 @@ export const encoderKnob = part('Molekula · Encoder knob', () => {
 
   // Eye on the top: a pocket as deep as the inlay, refilled by the eye, which leaves the
   // recessed outline around it. The open centre stays in the knob colour.
-  const pocketRadius = EYE.radius + EYE.groove / Math.cos(Math.PI / 6);
+  const scale = size / EYE.size;
+  const eyeRadius = EYE.radius * scale;
+  const dot = EYE.dot * scale;
+  const pocketRadius = eyeRadius + EYE.groove / Math.cos(Math.PI / 6);
   rectBodies('middle', p, [{ corners: hexagon(at, pocketRadius) }], z1 - EYE.depth, z1 + 1, 'Knob · eye pocket', { remove: [knob] });
   if (inlay) {
     const centre = sketchPlane('middle', p, z1 - EYE.depth - 0.05);
-    sketch(centre.plane, () => circle([at[0] + centre.dx, at[1] + centre.dy], EYE.dot)).name('Knob · eye centre · sketch');
+    sketch(centre.plane, () => circle([at[0] + centre.dx, at[1] + centre.dy], dot)).name('Knob · eye centre · sketch');
     extrude(EYE.depth + 0.05).add().scope(knob).name('Knob · eye centre');
-    const [eye] = rectBodies('middle', p, [{ corners: hexagon(at, EYE.radius) }], z1 - EYE.depth, z1, 'Knob · eye');
+    const [eye] = rectBodies('middle', p, [{ corners: hexagon(at, eyeRadius) }], z1 - EYE.depth, z1, 'Knob · eye');
     const hole = sketchPlane('middle', p, z1 + 1);
-    sketch(hole.plane, () => circle([at[0] + hole.dx, at[1] + hole.dy], EYE.dot)).name('Knob · eye hole · sketch');
+    sketch(hole.plane, () => circle([at[0] + hole.dx, at[1] + hole.dy], dot)).name('Knob · eye hole · sketch');
     extrude(EYE.depth + 2).remove().scope(eye).name('Knob · eye hole');
     color(eyeColor, eye);
   } else {
-    rectBodies('middle', p, [{ corners: hexagon(at, EYE.radius) }], z1 - EYE.depth - 0.05, z1, 'Knob · eye (plain)', { add: [knob] });
+    rectBodies('middle', p, [{ corners: hexagon(at, eyeRadius) }], z1 - EYE.depth - 0.05, z1, 'Knob · eye (plain)', { add: [knob] });
   }
 
   color(knobColor, knob);

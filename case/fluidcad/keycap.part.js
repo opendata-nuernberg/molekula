@@ -9,14 +9,16 @@ import { closed } from './outline.js';
 // of the pocket on the underside; the rim around the pocket reaches down to Z = -RIM.
 //
 // - Finger: a dish, concave in both directions, optionally tilted along Y.
-// - Thumb: a saddle. Concave along Y, so the thumb lies in a shallow trough that runs along
-//   X, the direction it sweeps over the thumb row; convex along X, so the key edges roll
+// - Thumb: a saddle. Concave across X, so the thumb lies in a shallow trough that runs along
+//   Y, the direction the thumb points; convex along Y, so the front and back edges roll
 //   away under the thumb instead of digging into it.
 //
-// Both top surfaces come from one construction: an arc in the XZ plane (concave or convex
-// across X) revolved about an axis parallel to X that lies above the cap. The revolved body
-// is cut from the cap, and its lower face, a torus, becomes the top surface: its curvature
-// along Y is set by the height of that axis.
+// Both top surfaces come from one construction: an arc (concave or convex) revolved about
+// an axis that lies above the cap. The revolved body is cut from the cap, and its lower
+// face, a torus, becomes the top surface: its curvature along the axis is set by the arc,
+// the curvature around it by the height of the axis. The dish runs its arc across X and
+// revolves it about an axis parallel to X; the saddle is the same construction turned by
+// 90°, with the convex arc along Y and the axis parallel to Y.
 //
 // The cap prints standing on its front edge (-Y). The stem legs then overhang sideways; an
 // integrated support carries them: a thin wall under the leg tips that touches them only on
@@ -128,18 +130,19 @@ export const keycap = part('Molekula · Keycap', () => {
     min: 1.5, max: 8, step: 0.1, group: 'Thumb', description: 'Higher than the finger keys, so the edges that roll away stay thick enough.',
   });
   const trough = param('Saddle trough (mm)', 0.8, 'number', {
-    min: 0, max: 2, step: 0.05, group: 'Thumb', description: 'Concave along Y: rise 6 mm from the centre.',
+    min: 0, max: 2, step: 0.05, group: 'Thumb', description: 'Concave across X: rise 6 mm from the centre.',
   });
   const roll = param('Saddle roll-off (mm)', 0.5, 'number', {
-    min: 0, max: 1.5, step: 0.05, group: 'Thumb', description: 'Convex along X: drop 6 mm from the centre.',
+    min: 0, max: 1.5, step: 0.05, group: 'Thumb', description: 'Convex along Y: drop 6 mm from the centre.',
   });
   const support = param('Integrated print support', true, 'checkbox', { group: 'Print' });
   const capColor = param('Colour', '#d8c9a3', 'color', { group: 'Print' });
 
   const thumb = profile === 'thumb';
   const h = thumb ? thumbHeight : height;
-  // Signed rise across X (positive = concave) and rise along Y (always concave; a flat
-  // direction gets a very large radius instead).
+  // Signed rise of the arc (positive = concave) and rise around the axis (always concave; a
+  // flat direction gets a very large radius instead). The dish runs its arc across X, the
+  // saddle along Y.
   const across = thumb ? -roll : dishAcross;
   const along = thumb ? trough : dishAlong;
   const turn = ((thumb ? 0 : tilt) * Math.PI) / 180;
@@ -147,8 +150,9 @@ export const keycap = part('Molekula · Keycap', () => {
   // Highest point of the top surface, to size the blank.
   const reachX = width / 2 + 0.5;
   const reachY = depth / 2 + 0.5;
+  const [reachArc, reachAxis] = thumb ? [reachY, reachX] : [reachX, reachY];
   const riseAt = (rise, d) => (rise > 0 ? radiusFor(rise) - Math.sqrt(Math.max(0, radiusFor(rise) ** 2 - d * d)) : 0);
-  const top = h + riseAt(Math.max(0, across), reachX) + riseAt(along, reachY) + Math.abs(Math.tan(turn)) * reachY + 1;
+  const top = h + riseAt(Math.max(0, across), reachArc) + riseAt(along, reachAxis) + Math.abs(Math.tan(turn)) * reachY + 1;
 
   // Blank: the footprint from the rim up to above the top surface.
   sketch(plane('xy', { offset: -RIM }), () => {
@@ -157,16 +161,18 @@ export const keycap = part('Molekula · Keycap', () => {
   }).name('Footprint');
   const cap = extrude(top + RIM).new().name('Keycap');
 
-  // Top surface. The cutting body's profile: the arc across X, closed upwards to the axis
-  // about which it is revolved. Tilting a surface of revolution about an axis parallel to
-  // its own only moves it along the circle: the axis moves to -R·sin(tilt) in Y and the low
-  // point of the dish slides forward, so the surface over the cap rises towards +Y.
+  // Top surface. The cutting body's profile: the arc, closed upwards to the axis about which
+  // it is revolved. Tilting a surface of revolution about an axis parallel to its own only
+  // moves it along the circle: the axis moves to -R·sin(tilt) in Y and the low point of the
+  // dish slides forward, so the surface over the cap rises towards +Y. The thumb has no tilt.
   const radius = along > 0.01 ? radiusFor(along) : 2000;
   const axisY = -radius * Math.sin(turn);
   const axisZ = h + radius * Math.cos(turn);
   const low = axisZ - radius; // lowest point of the profile, in the plane of the axis
-  // The XZ plane faces -Y: its offset is the negative y.
-  const cutter = sketch(plane('xz', { offset: -axisY }), () => {
+  // Dish: the arc in the XZ plane, which faces -Y, so its offset is the negative y. Saddle:
+  // the arc in the YZ plane through the centre, sketched in (y, z).
+  const profilePlane = thumb ? plane('yz', { offset: 0 }) : plane('xz', { offset: -axisY });
+  const cutter = sketch(profilePlane, () => {
     let z = low;
     if (Math.abs(across) < 1e-3) {
       line([-REACH, low], [REACH, low]);
@@ -182,9 +188,25 @@ export const keycap = part('Molekula · Keycap', () => {
     line([REACH, axisZ], [-REACH, axisZ]);
     line([-REACH, axisZ], [-REACH, z]);
   }).name('Top surface · profile');
-  revolve(axis('x', { offsetY: axisY, offsetZ: axisZ }), cutter).remove().scope(cap).name('Top surface');
+  const revolveAxis = thumb ? axis('y', { offsetZ: axisZ }) : axis('x', { offsetY: axisY, offsetZ: axisZ });
+  revolve(revolveAxis, cutter).remove().scope(cap).name('Top surface');
   if (printable) {
     chamfer(edgeChamfer, select(edge().above('xy', 0.2))).name('Top edge');
+    if (thumb && across < 0) {
+      // The saddle rolls off towards the front edge, which stands on the bed, so a 45°
+      // chamfer between the front wall and the top surface overhangs by more than 45°.
+      // Bevel that edge with a cone around the axis of the saddle instead: its sections
+      // across X are circles concentric with the top surface, so the bevel is even across
+      // the trough, and its flank stands at exactly 45° to the bed everywhere. It starts a
+      // little below the chamfer on the wall and removes it.
+      const bed = -depth / 2;
+      const front = low - riseAt(-across, depth / 2); // top surface at the front edge, x = 0
+      const rim = axisZ - front + edgeChamfer + 0.05; // cone radius at the front wall
+      const bevel = sketch(plane('yz', { offset: 0 }), () => {
+        closed([[bed - 1, axisZ - rim - 1], [bed + rim, axisZ], [bed - 1, axisZ]]);
+      }).name('Front bevel · profile');
+      revolve(axis('y', { offsetZ: axisZ }), bevel).remove().scope(cap).name('Front bevel');
+    }
   } else {
     fillet(edgeRadius, select(edge().above('xy', 0.2))).name('Top edge');
   }
