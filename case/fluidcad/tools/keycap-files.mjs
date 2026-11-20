@@ -12,11 +12,19 @@
  * encoder-knob.part.js and is turned onto its flat top; its eye inlay gets the same move, so
  * the two files line up as one object with two parts in the slicer.
  *
+ * Print groups: for printing by object (OrcaSlicer: print sequence "by object"), the caps are
+ * grouped tightly in two rows standing back to back; the cross bars of their support frames
+ * overlap, so each group is one stable object. A full set is seven groups, all in the base
+ * colour or any group in an accent colour:
+ *   2 × home row: 4 caps, 3 finger caps and the index finger home cap
+ *   4 × finger: 6 finger caps, the keys around the home rows
+ *   1 × thumbs: the 6 thumb caps
+ *
  * Output in case/fluidcad/print/keycaps/ (not tracked in Git), binary STL:
- *   keycap-finger, keycap-home-<mark>, keycap-thumb (.step/.stl): one cap each
- *   keycaps-beige.stl: 30 finger caps and the 2 home caps, the full set in the base colour
- *   keycaps-thumbs.stl: the 6 thumb caps in three rows of two (blue, pink, green from front
- *     to back, one cap per half each); split it into objects in the slicer to assign colours
+ *   keycap-group-home-row, keycap-group-finger, keycap-group-thumbs (.stl): one group each
+ *   keycaps-set.3mf: the seven groups as separate objects on one plate
+ *   keycap-finger, keycap-home-<mark>, keycap-thumb (.step/.stl): single caps, for printing
+ *     each cap in its own colour
  *   encoder-knob.step/.stl, encoder-knob-eye.stl, encoder-knob-with-eye.step
  */
 
@@ -33,11 +41,11 @@ if (!['hexagon', 'dots'].includes(mark)) {
   console.error('Give the homing mark as hexagon or dots');
   process.exit(1);
 }
-// Full set for 38 keys (see keycaps/README.md): per half 15 finger caps, 1 home cap on the
-// index finger and 3 thumb caps.
-const SET = { finger: 30, home: 2, thumb: 6 };
-// Distance between the caps on the plate, in X and Y.
-const PITCH = [21.5, 16];
+// Gap between neighbouring caps in a row; overlap of the cross bars of two caps back to back.
+const GAP = 1.5;
+const BAR_OVERLAP = 0.5;
+// Gap between the groups in keycaps-set.3mf; the slicer can rearrange them.
+const GROUP_GAP = 12;
 
 const fluidcad = fs.realpathSync(path.join(WORKSPACE, 'node_modules', 'fluidcad'));
 const lib = name => pathToFileURL(path.join(fluidcad, 'bin', 'lib', name)).href;
@@ -124,38 +132,39 @@ function compound(shapes) {
   return c;
 }
 
-/** Shapes on a grid of `columns`, row after row from the front (-Y). */
-function grid(shapes, columns) {
-  const rows = Math.ceil(shapes.length / columns);
-  return compound(shapes.map((shape, i) => {
-    const [c, r] = [i % columns, Math.floor(i / columns)];
-    return moved(shape, translation((c - (columns - 1) / 2) * PITCH[0], (r - (rows - 1) / 2) * PITCH[1], 0));
-  }));
-}
-const copies = (shape, n) => Array(n).fill(shape);
-
 function size(shape) {
   const { lo, hi } = bounds(shape);
   return `${(hi[0] - lo[0]).toFixed(1)} × ${(hi[1] - lo[1]).toFixed(1)} × ${(hi[2] - lo[2]).toFixed(1)} mm`;
 }
 
-/** The binding writes ASCII STL only; binary is about a fifth of the size. */
-function binaryStl(ascii) {
-  const text = Buffer.from(ascii).toString('latin1');
+/** Triangles of a shape (9 coordinates each). The binding writes ASCII STL only. */
+function triangles(shape) {
+  new oc.BRepMesh_IncrementalMesh(shape, 0.02, false, 0.2, false);
+  new oc.StlAPI_Writer().Write(shape, '/out.stl', new oc.Message_ProgressRange());
+  const text = Buffer.from(oc.FS.readFile('/out.stl')).toString('latin1');
   const v = [];
   const re = /vertex\s+(\S+)\s+(\S+)\s+(\S+)/g;
   for (let m; (m = re.exec(text));) v.push(+m[1], +m[2], +m[3]);
-  const n = v.length / 9;
+  return Float64Array.from(v);
+}
+
+/** Binary STL of triangle sets, each moved by [dx, dy]: a fifth of the size of ASCII. */
+function binaryStl(sets) {
+  const n = sets.reduce((sum, { tris }) => sum + tris.length / 9, 0);
   const out = Buffer.alloc(84 + 50 * n);
   out.write('Molekula keycaps', 0, 'latin1');
   out.writeUInt32LE(n, 80);
-  for (let i = 0; i < n; i++) {
-    const [ax, ay, az, bx, by, bz, cx, cy, cz] = v.slice(9 * i, 9 * i + 9);
-    const [ux, uy, uz, wx, wy, wz] = [bx - ax, by - ay, bz - az, cx - ax, cy - ay, cz - az];
-    const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
-    const l = Math.hypot(nx, ny, nz) || 1;
-    const o = 84 + 50 * i;
-    [nx / l, ny / l, nz / l, ax, ay, az, bx, by, bz, cx, cy, cz].forEach((x, k) => out.writeFloatLE(x, o + 4 * k));
+  let o = 84;
+  for (const { tris, at = [0, 0] } of sets) {
+    for (let i = 0; i < tris.length; i += 9) {
+      const [ax, ay, az, bx, by, bz, cx, cy, cz] = tris.subarray(i, i + 9);
+      const [ux, uy, uz, wx, wy, wz] = [bx - ax, by - ay, bz - az, cx - ax, cy - ay, cz - az];
+      const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+      const l = Math.hypot(nx, ny, nz) || 1;
+      [nx / l, ny / l, nz / l, ax + at[0], ay + at[1], az, bx + at[0], by + at[1], bz, cx + at[0], cy + at[1], cz]
+        .forEach((x, k) => out.writeFloatLE(x, o + 4 * k));
+      o += 50;
+    }
   }
   return out;
 }
@@ -168,15 +177,147 @@ function write(shape, name, { step = true } = {}) {
     w.Write('/out.step');
     fs.writeFileSync(`${base}.step`, oc.FS.readFile('/out.step'));
   }
-  new oc.BRepMesh_IncrementalMesh(shape, 0.02, false, 0.2, false);
-  new oc.StlAPI_Writer().Write(shape, '/out.stl', new oc.Message_ProgressRange());
-  fs.writeFileSync(`${base}.stl`, binaryStl(oc.FS.readFile('/out.stl')));
+  const tris = triangles(shape);
+  fs.writeFileSync(`${base}.stl`, binaryStl([{ tris }]));
   console.log(`${name}: ${(volume(shape) / 1000).toFixed(2)} cm³, ${size(shape)} -> ${path.relative(process.cwd(), base)}${step ? '.step/' : '.'}stl`);
+  return tris;
 }
+
+/** Triangles turned by 180° about the vertical axis. */
+const turned = tris => tris.map((v, i) => (i % 3 === 2 ? v : -v));
+
+/**
+ * A print group: caps in two rows of `columns`, standing back to back. Front row as exported
+ * (top surface towards -Y, frame towards +Y), back row turned by 180° and moved so that the
+ * cross bars at the ends of the frames overlap. Returns the triangle sets.
+ */
+function group(caps, columns, frameEnd, width) {
+  const pitch = width + GAP;
+  const back = 2 * frameEnd - BAR_OVERLAP;
+  return caps.map((tris, i) => {
+    const [c, r] = [i % columns, Math.floor(i / columns)];
+    const x = (c - (columns - 1) / 2) * pitch;
+    return r === 0 ? { tris, at: [x, 0] } : { tris: turned(tris), at: [-x, back] };
+  });
+}
+
+function writeGroup(name, sets) {
+  fs.writeFileSync(path.join(OUTPUT, `${name}.stl`), binaryStl(sets));
+  console.log(`${name}: ${sets.length} caps -> ${path.relative(process.cwd(), path.join(OUTPUT, name))}.stl`);
+}
+
+/** One mesh with shared vertices from triangle sets. */
+function mesh(sets) {
+  const index = new Map();
+  const vertices = [];
+  const faces = [];
+  for (const { tris, at = [0, 0] } of sets) {
+    for (let i = 0; i < tris.length; i += 9) {
+      const f = [0, 1, 2].map(k => {
+        const p = [tris[i + 3 * k] + at[0], tris[i + 3 * k + 1] + at[1], tris[i + 3 * k + 2]];
+        const key = p.map(v => v.toFixed(5)).join(',');
+        if (!index.has(key)) { index.set(key, vertices.length); vertices.push(p); }
+        return index.get(key);
+      });
+      if (f[0] !== f[1] && f[1] !== f[2] && f[0] !== f[2]) faces.push(f);
+    }
+  }
+  return { vertices, faces };
+}
+
+/** CRC-32 for the ZIP container of a 3MF. */
+const CRC = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (const b of buf) c = CRC[(c ^ b) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+/** Uncompressed ZIP of { name: Buffer }. */
+function zip(files) {
+  const local = [];
+  const central = [];
+  let offset = 0;
+  for (const [name, data] of Object.entries(files)) {
+    const n = Buffer.from(name);
+    const crc = crc32(data);
+    const head = Buffer.alloc(30);
+    head.writeUInt32LE(0x04034b50, 0); head.writeUInt16LE(20, 4); head.writeUInt32LE(crc, 14);
+    head.writeUInt32LE(data.length, 18); head.writeUInt32LE(data.length, 22); head.writeUInt16LE(n.length, 26);
+    local.push(head, n, data);
+    const dir = Buffer.alloc(46);
+    dir.writeUInt32LE(0x02014b50, 0); dir.writeUInt16LE(20, 4); dir.writeUInt16LE(20, 6); dir.writeUInt32LE(crc, 16);
+    dir.writeUInt32LE(data.length, 20); dir.writeUInt32LE(data.length, 24); dir.writeUInt16LE(n.length, 28);
+    dir.writeUInt32LE(offset, 42);
+    central.push(dir, n);
+    offset += 30 + n.length + data.length;
+  }
+  const size = central.reduce((s, b) => s + b.length, 0);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(central.length / 2, 8); end.writeUInt16LE(central.length / 2, 10);
+  end.writeUInt32LE(size, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...local, ...central, end]);
+}
+
+/** 3MF with each group as its own object, laid out in rows around the plate centre. */
+function write3mf(name, groups, plate = [256, 256]) {
+  const objects = groups.map((g, i) => {
+    const { vertices, faces } = mesh(g.sets);
+    const xs = vertices.map(v => v[0]);
+    const ys = vertices.map(v => v[1]);
+    const box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    const v = vertices.map(p => `<vertex x="${p[0].toFixed(5)}" y="${(p[1]).toFixed(5)}" z="${p[2].toFixed(5)}"/>`).join('');
+    const t = faces.map(f => `<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join('');
+    return { id: i + 1, name: g.name, box, xml: `<object id="${i + 1}" name="${g.name}" type="model"><mesh><vertices>${v}</vertices><triangles>${t}</triangles></mesh></object>` };
+  });
+  // Rows from front to back, as many groups per row as fit.
+  const rows = [];
+  let row = [];
+  let rowWidth = 0;
+  for (const o of objects) {
+    const w = o.box[2] - o.box[0];
+    if (row.length && rowWidth + GROUP_GAP + w > plate[0] - 20) { rows.push(row); row = []; rowWidth = 0; }
+    rowWidth += (row.length ? GROUP_GAP : 0) + w;
+    row.push(o);
+  }
+  rows.push(row);
+  const depths = rows.map(r => Math.max(...r.map(o => o.box[3] - o.box[1])));
+  const total = depths.reduce((s, d) => s + d, 0) + GROUP_GAP * (rows.length - 1);
+  const items = [];
+  let y = (plate[1] - total) / 2;
+  rows.forEach((r, k) => {
+    const width = r.reduce((s, o) => s + o.box[2] - o.box[0], 0) + GROUP_GAP * (r.length - 1);
+    let x = (plate[0] - width) / 2;
+    for (const o of r) {
+      const tx = x - o.box[0];
+      const ty = y - o.box[1];
+      items.push(`<item objectid="${o.id}" transform="1 0 0 0 1 0 0 0 1 ${tx.toFixed(3)} ${ty.toFixed(3)} 0"/>`);
+      x += o.box[2] - o.box[0] + GROUP_GAP;
+    }
+    y += depths[k] + GROUP_GAP;
+  });
+  const model = `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources>${objects.map(o => o.xml).join('')}</resources><build>${items.join('')}</build></model>`;
+  const files = {
+    '[Content_Types].xml': Buffer.from('<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>'),
+    '_rels/.rels': Buffer.from('<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),
+    '3D/3dmodel.model': Buffer.from(model),
+  };
+  fs.writeFileSync(path.join(OUTPUT, `${name}.3mf`), zip(files));
+  console.log(`${name}: ${groups.length} objects in ${rows.length} rows -> ${path.relative(process.cwd(), path.join(OUTPUT, name))}.3mf`);
+}
+const copies = (x, n) => Array(n).fill(x);
 
 fs.mkdirSync(OUTPUT, { recursive: true });
 
 // Key frame -> print orientation: turned by 90° about X, the front edge (-Y) onto the bed.
+// The key's Z becomes -Y: the frame of the integrated support ends at y = 8 (SUPPORT in
+// keycap.part.js), the caps are 18.3 mm wide.
+const FRAME_END = 8;
+const WIDTH = 18.3;
 const standUp = rotation([1, 0, 0], Math.PI / 2);
 const caps = {};
 for (const [name, values] of [
@@ -186,12 +327,23 @@ for (const [name, values] of [
 ]) {
   const found = readSolids(await render('keycap.part.js', values));
   if (found.length !== 1) throw new Error(`keycap ${name}: ${found.length} solids instead of one`);
-  caps[name] = placed(found[0], standUp).shape;
-  write(caps[name], `keycap-${name}`);
+  // Turned onto the front edge; X stays centred, Y = 0 stays at the pocket floor.
+  const b = bounds(moved(found[0], standUp));
+  caps[name] = write(moved(found[0], translation(0, 0, -b.lo[2]).Multiplied(standUp)), `keycap-${name}`);
 }
 
-write(grid([...copies(caps.finger, SET.finger), ...copies(caps[`home-${mark}`], SET.home)], 8), 'keycaps-beige', { step: false });
-write(grid(copies(caps.thumb, SET.thumb), 2), 'keycaps-thumbs', { step: false });
+// Print groups. Caps in print orientation: pocket floor at y = 0, frame end at y = FRAME_END.
+const homeRow = group([...copies(caps.finger, 3), caps[`home-${mark}`]], 2, FRAME_END, WIDTH);
+const finger = group(copies(caps.finger, 6), 3, FRAME_END, WIDTH);
+const thumbs = group(copies(caps.thumb, 6), 3, FRAME_END, WIDTH);
+writeGroup('keycap-group-home-row', homeRow);
+writeGroup('keycap-group-finger', finger);
+writeGroup('keycap-group-thumbs', thumbs);
+write3mf('keycaps-set', [
+  { name: 'Finger 1', sets: finger }, { name: 'Finger 2', sets: finger }, { name: 'Home row left', sets: homeRow },
+  { name: 'Finger 3', sets: finger }, { name: 'Finger 4', sets: finger }, { name: 'Home row right', sets: homeRow },
+  { name: 'Thumbs', sets: thumbs },
+]);
 
 // Knob: the larger solid is the knob, the smaller one the eye.
 const knobSolids = readSolids(await render('encoder-knob.part.js', {})).sort((a, b) => volume(b) - volume(a));

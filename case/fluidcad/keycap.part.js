@@ -1,4 +1,4 @@
-import { arc, axis, color, extrude, fillet, fuse, line, param, part, plane, revolve, select, sketch, sphere } from 'fluidcad/core';
+import { arc, axis, chamfer, circle, color, extrude, fillet, fuse, line, param, part, plane, revolve, select, sketch, sphere } from 'fluidcad/core';
 import { edge } from 'fluidcad/filters';
 import { closed } from './outline.js';
 
@@ -21,6 +21,17 @@ import { closed } from './outline.js';
 // The cap prints standing on its front edge (-Y). The stem legs then overhang sideways; an
 // integrated support carries them: a thin wall under the leg tips that touches them only on
 // a narrow strip, tied to the cap by a flat frame of two layers on the bed.
+//
+// Print-friendly edges (default): apart from the stem legs, no face of the standing cap
+// overhangs by more than 45°. Round edges start tangent to the bed at the front edge and
+// overhang almost horizontally there, so the corners of the footprint and the top edge get
+// 45° chamfers instead; the homing marks get 45° flanks (cones instead of domes, a hexagon
+// with sloped walls). Off, the cap has the round edges of the original caps.
+//
+// The chamfers stay sharp (their edges are 135°, printing softens them a little). Rounding
+// them failed in OpenCascade: a fillet over the chamfer edges, and even a chamfer along
+// rounded footprint corners, left degenerate B-spline patches that meshed into tens of
+// thousands of slivers with open edges, or a top surface that was not fully cut.
 
 // Depth of the pocket on the underside; its walls slope at 45°, so they print on edge.
 const RIM = 1;
@@ -37,8 +48,10 @@ const SUPPORT = {
 };
 // Homing marks on the top surface. Dots: three domes. Hexagon: a raised outline, like the
 // eyes on the middle cover.
-const DOTS = { at: [-2, 0, 2], radius: 0.6, sink: 0.1 };
-const HEX = { radius: 2.6, line: 0.6, height: 0.45 };
+const DOTS = { at: [-2, 0, 2], radius: 0.6, sink: 0.1, cone: { base: 0.7, height: 0.45 } };
+// Hexagon: corner radius of the outer edge and line width at the top surface. With 45° flanks
+// the line is `slopedLine` wide at the surface and narrows to a ridge at `height`.
+const HEX = { radius: 2.6, line: 0.6, height: 0.45, slopedLine: 1.1, slopedHeight: 0.45 };
 // Half length of the cutting body for the top surface, beyond the widest cap.
 const REACH = 12;
 
@@ -56,6 +69,14 @@ function chamferedRect(cx, cy, w, h, c) {
   const p = [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]];
   return closed(p);
 }
+
+/** Rectangle with 45° chamfered corners (legs c), centred at the origin, corners counter-clockwise. */
+const octagon = (w, h, c) => {
+  const [x, y] = [w / 2, h / 2];
+  /** @type {[number, number][]} */
+  const p = [[-x + c, -y], [x - c, -y], [x, -y + c], [x, y - c], [x - c, y], [-x + c, y], [-x, y - c], [-x, -y + c]];
+  return p;
+};
 
 /** Rounded rectangle centred at the origin of the sketch. */
 function roundedRect(w, h, r) {
@@ -80,8 +101,17 @@ export const keycap = part('Molekula · Keycap', () => {
   });
   const width = param('Width (mm)', 18.3, 'number', { min: 15, max: 18.8, step: 0.1, group: 'Body' });
   const depth = param('Depth (mm)', 15.3, 'number', { min: 13, max: 15.8, step: 0.1, group: 'Body' });
-  const corner = param('Corner radius (mm)', 3, 'number', { min: 0.5, max: 6, step: 0.1, group: 'Body' });
-  const edgeRadius = param('Top edge radius (mm)', 2, 'number', { min: 0.3, max: 2.5, step: 0.1, group: 'Body' });
+  const printable = param('Print-friendly edges (45°)', true, 'checkbox', {
+    group: 'Body', description: 'Chamfers instead of round edges, so nothing but the stem overhangs by more than 45° when the cap prints standing.',
+  });
+  const corner = param('Corner radius (mm)', 3, 'number', { min: 0.5, max: 6, step: 0.1, group: 'Body', description: 'Round edges only.' });
+  const edgeRadius = param('Top edge radius (mm)', 2, 'number', { min: 0.3, max: 2.5, step: 0.1, group: 'Body', description: 'Round edges only.' });
+  const cornerChamfer = param('Corner chamfer (mm)', 2.2, 'number', {
+    min: 0.5, max: 5, step: 0.1, group: 'Body', description: 'Print-friendly edges: 45° chamfer of the footprint corners, measured along each side.',
+  });
+  const edgeChamfer = param('Top edge chamfer (mm)', 1.5, 'number', {
+    min: 0.3, max: 2.5, step: 0.1, group: 'Body', description: 'Print-friendly edges: 45° chamfer of the top edge.',
+  });
   const height = param('Height at the centre (mm)', 2.5, 'number', {
     min: 1.5, max: 8, step: 0.1, group: 'Body', description: 'Top surface above the pocket floor; the rim adds 1 mm.',
   });
@@ -122,7 +152,8 @@ export const keycap = part('Molekula · Keycap', () => {
 
   // Blank: the footprint from the rim up to above the top surface.
   sketch(plane('xy', { offset: -RIM }), () => {
-    roundedRect(width, depth, corner);
+    if (printable) closed(octagon(width, depth, cornerChamfer));
+    else roundedRect(width, depth, corner);
   }).name('Footprint');
   const cap = extrude(top + RIM).new().name('Keycap');
 
@@ -152,11 +183,22 @@ export const keycap = part('Molekula · Keycap', () => {
     line([-REACH, axisZ], [-REACH, z]);
   }).name('Top surface · profile');
   revolve(axis('x', { offsetY: axisY, offsetZ: axisZ }), cutter).remove().scope(cap).name('Top surface');
-  fillet(edgeRadius, select(edge().above('xy', 0.2))).name('Top edge');
+  if (printable) {
+    chamfer(edgeChamfer, select(edge().above('xy', 0.2))).name('Top edge');
+  } else {
+    fillet(edgeRadius, select(edge().above('xy', 0.2))).name('Top edge');
+  }
 
-  // Pocket on the underside with 45° walls.
+  // Pocket on the underside with 45° walls. With chamfered corners its outline is the
+  // footprint inset by the rim, so the rim keeps its width around the corners.
+  const inset = RIM_WIDTH + RIM;
   sketch(plane('xy', { offset: 0 }), () => {
-    roundedRect(width - 2 * (RIM_WIDTH + RIM), depth - 2 * (RIM_WIDTH + RIM), Math.max(0.3, corner - RIM_WIDTH - RIM));
+    if (printable) {
+      const c = Math.max(0.3, cornerChamfer - inset * (2 - Math.SQRT2));
+      closed(octagon(width - 2 * inset, depth - 2 * inset, c));
+    } else {
+      roundedRect(width - 2 * inset, depth - 2 * inset, Math.max(0.3, corner - inset));
+    }
   }).name('Pocket · floor');
   extrude(RIM).draft(45).remove().scope(cap).name('Pocket');
 
@@ -169,8 +211,28 @@ export const keycap = part('Molekula · Keycap', () => {
   }
 
   // Homing mark.
-  if (mark === 'dots') {
+  if (mark === 'dots' && printable) {
+    // Cones with 45° flanks, from below the surface up to their small flat tip.
+    const { base, height: up } = DOTS.cone;
+    for (const x of DOTS.at) {
+      sketch(plane('xy', { offset: h - 0.3 }), () => circle([x, 0], 2 * (base + 0.3))).name(`Homing dot ${x} · sketch`);
+      extrude(0.3 + up).draft(-45).add().scope(cap).name(`Homing dot ${x}`);
+    }
+  } else if (mark === 'dots') {
     for (const x of DOTS.at) fuse(cap, sphere(DOTS.radius).translate(x, 0, h - DOTS.sink));
+  } else if (mark === 'hexagon' && printable) {
+    // A ridge with 45° flanks: a hexagonal frustum narrowing upwards, minus one widening
+    // upwards. Sizes are apothems (centre to side); `below` reaches under the dished surface.
+    const below = 0.6;
+    const up = HEX.slopedHeight;
+    const outer = HEX.radius * Math.cos(Math.PI / 6);
+    const inner = outer - HEX.slopedLine;
+    const r = a => a / Math.cos(Math.PI / 6);
+    sketch(plane('xy', { offset: h - below }), () => closed(hexagon(r(outer + below)))).name('Homing hexagon · sketch');
+    const ring = extrude(below + up).draft(-45).new().name('Homing hexagon');
+    sketch(plane('xy', { offset: h + up }), () => closed(hexagon(r(inner + up)))).name('Homing hexagon · inside · sketch');
+    extrude(below + up + 0.01).draft(-45).remove().scope(ring).name('Homing hexagon · inside');
+    fuse(cap, ring);
   } else if (mark === 'hexagon') {
     sketch(plane('xy', { offset: h - 0.8 }), () => {
       closed(hexagon(HEX.radius));

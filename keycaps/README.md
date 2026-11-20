@@ -12,7 +12,11 @@ All caps print standing on their front edge. An integrated support carries the s
 - **Thumb (saddle):** concave along the column, so the thumb lies in a shallow trough that runs along the thumb row (0.8 mm, **Saddle trough**). Convex across, so the edges roll away under the thumb instead of digging into it (0.5 mm, **Saddle roll-off**). The thumb caps are 0.5 mm higher at the centre, so the rolled-off edges stay thick enough.
 - **Homing mark:** none, three dots as on the old home cap, or a raised hexagon outline in the style of the eyes on the middle cover.
 
-Both surfaces are built the same way. An arc across the key is revolved about an axis parallel to X that lies above the cap, and the revolved body is cut from the blank. The arc decides the shape across the key (concave for the dish, convex for the saddle), and the height of the axis decides the shape along it. The top edge is then rounded with 2 mm.
+Both surfaces are built the same way. An arc across the key is revolved about an axis parallel to X that lies above the cap, and the revolved body is cut from the blank. The arc decides the shape across the key (concave for the dish, convex for the saddle), and the height of the axis decides the shape along it.
+
+**Print-friendly edges (45°)**, on by default: apart from the stem legs, no face of the standing cap overhangs by more than 45°. Round edges start tangent to the bed at the front edge and overhang almost horizontally there. So the four corners of the footprint and the whole top edge get 45° chamfers instead (**Corner chamfer** 2.2 mm, **Top edge chamfer** 1.5 mm). The homing marks get 45° flanks: the dots become small cones, and the hexagon becomes a ridge with sloped sides. Checked on the exported meshes, the only faces that point down more steeply are the undersides of the stem legs, which the integrated support carries.
+
+The chamfers stay sharp. Their edges are 135° and printing softens them a little. Rounding them failed in OpenCascade: both a fillet over the chamfer edges and a chamfer along rounded footprint corners left degenerate faces, which meshed into tens of thousands of slivers with open edges, or left the top surface not fully cut. With the option off, the cap gets the round edges of the original caps (corner radius 3 mm, top edge 2 mm).
 
 Colours: the case is beige, so all finger caps are beige. The index finger home caps carry the mark in the same colour. The three thumb caps per half take the eye colours blue, pink and green. Each cap is one colour, since a cap printed on edge would need a filament change in almost every layer for a coloured detail on its top.
 
@@ -37,13 +41,25 @@ node case/fluidcad/tools/keycap-files.mjs          # home caps with the hexagon
 node case/fluidcad/tools/keycap-files.mjs dots     # home caps with three dots
 ```
 
+For printing by object (OrcaSlicer: print sequence "by object", which gives cleaner caps than printing all at once), the caps come in tight groups. Each group stands in two rows back to back, with 1.5 mm between neighbours, and the cross bars of the support frames overlap, so a group is one stable object. A full set is seven groups:
+
+| Group | Caps | Count | Contents |
+| --- | --- | --- | --- |
+| Home row | 4 | 2 | three finger caps and the index finger home cap |
+| Finger | 6 | 4 | finger caps for the keys around the home rows |
+| Thumbs | 6 | 1 | the thumb caps |
+
+![The seven print groups on one plate, the thumb group in an accent colour](../images/keycaps-print-groups.png)
+
+All seven in beige make a complete set. An accent colour is a matter of printing one group in another filament, for example the thumbs or the home rows, even on a printer with a single colour. For caps in many colours, print the single caps.
+
 The script writes into `case/fluidcad/print/keycaps/`:
 
 | File | Contents |
 | --- | --- |
-| `keycaps-beige.stl` | The 30 finger caps and the 2 home caps of a full set, on one plate |
-| `keycaps-thumbs.stl` | The 6 thumb caps in three rows of two. Split it into objects in the slicer and give each row its colour: blue, pink, green from front to back. |
-| `keycap-finger`, `keycap-home-<mark>`, `keycap-thumb` | One cap each, as STEP and STL |
+| `keycaps-set.3mf` | The seven groups as separate objects on one plate (256 × 256 mm): open it, set the print sequence to "by object", and assign filaments per object |
+| `keycap-group-home-row.stl`, `keycap-group-finger.stl`, `keycap-group-thumbs.stl` | One group each |
+| `keycap-finger`, `keycap-home-<mark>`, `keycap-thumb` | Single caps, as STEP and STL |
 | `encoder-knob.stl`, `encoder-knob-eye.stl` | Knob and eye inlay, lined up. Load both as one object with two parts. |
 
 The settings of the original caps should work for the new ones too: 0.12 mm layers, 4 walls, supports only where painted.
