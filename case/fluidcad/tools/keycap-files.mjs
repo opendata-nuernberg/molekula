@@ -12,13 +12,15 @@
  * encoder-knob.part.js and is turned onto its flat top; its eye inlay gets the same move, so
  * the two files line up as one object with two parts in the slicer.
  *
- * Print groups: for printing by object (OrcaSlicer: print sequence "by object"), the caps are
- * grouped tightly in two rows standing back to back; the cross bars of their support frames
- * overlap, so each group is one stable object. A full set is seven groups, all in the base
- * colour or any group in an accent colour:
- *   2 × home row: 4 caps, 3 finger caps and the index finger home cap
- *   4 × finger: 6 finger caps, the keys around the home rows
- *   1 × thumbs: the 6 thumb caps
+ * Print groups: for printing by object (OrcaSlicer: print sequence "by object"), the caps
+ * stand in rings, top surfaces outwards, their support frames joined in the middle, so each
+ * group is one stable object. Four caps form a square (the pinwheel of the original
+ * clusters: the frames cross in a grid), six caps a hexagon (the frames are joined by a flat
+ * hexagonal ring). A full set is seven groups, all in the base colour or any group in an
+ * accent colour:
+ *   2 × home row: square of 3 finger caps and the index finger home cap
+ *   4 × finger: hexagon of 6 finger caps, the keys around the home rows
+ *   1 × thumbs: hexagon of the 6 thumb caps
  *
  * Output in case/fluidcad/print/keycaps/ (not tracked in Git), binary STL:
  *   keycap-group-home-row, keycap-group-finger, keycap-group-thumbs (.stl): one group each
@@ -41,9 +43,13 @@ if (!['hexagon', 'dots'].includes(mark)) {
   console.error('Give the homing mark as hexagon or dots');
   process.exit(1);
 }
-// Gap between neighbouring caps in a row; overlap of the cross bars of two caps back to back.
-const GAP = 1.5;
-const BAR_OVERLAP = 0.5;
+// Square of four (the original clusters): pocket floor of each cap `distance` from the
+// centre, shifted sideways by `shift`, so the caps interlock like a pinwheel.
+const SQUARE = { distance: 11.35, shift: 2 };
+// Hexagon of six: smallest distance at which neighbouring caps keep `gap` at their inner
+// corners (rim 1 mm behind the pocket floor, half width 9.15 mm); the ring joining the cross
+// bars is one layer pair thick.
+const HEXAGON = { gap: 1.5, ring: 0.4 };
 // Gap between the groups in keycaps-set.3mf; the slicer can rearrange them.
 const GROUP_GAP = 12;
 
@@ -183,27 +189,74 @@ function write(shape, name, { step = true } = {}) {
   return tris;
 }
 
-/** Triangles turned by 180° about the vertical axis. */
-const turned = tris => tris.map((v, i) => (i % 3 === 2 ? v : -v));
+/** Triangles turned by `deg` about the vertical axis. */
+function turned(tris, deg) {
+  const [c, sn] = [Math.cos((deg * Math.PI) / 180), Math.sin((deg * Math.PI) / 180)];
+  const out = new Float64Array(tris.length);
+  for (let i = 0; i < tris.length; i += 3) {
+    out[i] = tris[i] * c - tris[i + 1] * sn;
+    out[i + 1] = tris[i] * sn + tris[i + 1] * c;
+    out[i + 2] = tris[i + 2];
+  }
+  return out;
+}
+
+/** Flat ring between two concentric regular polygons (apothems r0 < r1), as triangles. */
+function polygonRing(n, r0, r1, height, startDeg) {
+  const corner = (r, k, z) => {
+    const a = ((startDeg + (k * 360) / n) * Math.PI) / 180;
+    const R = r / Math.cos(Math.PI / n);
+    return [R * Math.cos(a), R * Math.sin(a), z];
+  };
+  const t = [];
+  const quad = (p, q, r, u) => t.push(...p, ...q, ...r, ...p, ...r, ...u);
+  for (let k = 0; k < n; k++) {
+    const [i0, i1, o0, o1] = [corner(r0, k, 0), corner(r0, k + 1, 0), corner(r1, k, 0), corner(r1, k + 1, 0)];
+    const [I0, I1, O0, O1] = [corner(r0, k, height), corner(r0, k + 1, height), corner(r1, k, height), corner(r1, k + 1, height)];
+    quad(i0, i1, o1, o0); // bottom, facing down
+    quad(I0, O0, O1, I1); // top
+    quad(o0, o1, O1, O0); // outside
+    quad(i1, i0, I0, I1); // inside
+  }
+  return Float64Array.from(t);
+}
 
 /**
- * A print group: caps in two rows of `columns`, standing back to back. Front row as exported
- * (top surface towards -Y, frame towards +Y), back row turned by 180° and moved so that the
- * cross bars at the ends of the frames overlap. Returns the triangle sets.
+ * A print group: the caps in a ring, top surfaces outwards. A cap as exported has its pocket
+ * floor at y = 0, its top towards -Y and its frame towards +Y, ending at y = frameEnd.
+ * Four caps: the pinwheel of the original clusters. Six caps: a hexagon, the cross bars at
+ * the ends of the frames joined by a flat ring.
  */
-function group(caps, columns, frameEnd, width) {
-  const pitch = width + GAP;
-  const back = 2 * frameEnd - BAR_OVERLAP;
-  return caps.map((tris, i) => {
-    const [c, r] = [i % columns, Math.floor(i / columns)];
-    const x = (c - (columns - 1) / 2) * pitch;
-    return r === 0 ? { tris, at: [x, 0] } : { tris: turned(tris), at: [-x, back] };
+function group(caps, frameEnd, width) {
+  const n = caps.length;
+  let distance = SQUARE.distance;
+  let shift = SQUARE.shift;
+  if (n === 6) {
+    // Inner corner of a cap at (width / 2, distance - 1) keeps gap / 2 from the 30° line
+    // between two neighbours.
+    const half = Math.PI / 6;
+    distance = 1 + (HEXAGON.gap / 2 + (width / 2) * Math.cos(half)) / Math.sin(half);
+    shift = 0;
+  } else if (n !== 4) {
+    throw new Error(`groups of ${n} caps are not laid out`);
+  }
+  const sets = caps.map((tris, i) => {
+    const phi = -90 + (i * 360) / n; // outward direction of this cap
+    const [ux, uy] = [Math.cos((phi * Math.PI) / 180), Math.sin((phi * Math.PI) / 180)];
+    // Turn so that the top (-Y) faces outwards, then move the pocket floor out.
+    return { tris: turned(tris, phi + 90), at: [distance * ux + shift * uy, distance * uy - shift * ux] };
   });
+  if (n === 6) {
+    // Ring under the cross bars (frameEnd - 1 … frameEnd from the pocket floor), sides
+    // facing the caps.
+    sets.push({ tris: polygonRing(6, distance - frameEnd, distance - frameEnd + 1, HEXAGON.ring, -90 + 30) });
+  }
+  return sets;
 }
 
 function writeGroup(name, sets) {
   fs.writeFileSync(path.join(OUTPUT, `${name}.stl`), binaryStl(sets));
-  console.log(`${name}: ${sets.length} caps -> ${path.relative(process.cwd(), path.join(OUTPUT, name))}.stl`);
+  console.log(`${name}: ${sets.length} parts -> ${path.relative(process.cwd(), path.join(OUTPUT, name))}.stl`);
 }
 
 /** One mesh with shared vertices from triangle sets. */
@@ -333,9 +386,9 @@ for (const [name, values] of [
 }
 
 // Print groups. Caps in print orientation: pocket floor at y = 0, frame end at y = FRAME_END.
-const homeRow = group([...copies(caps.finger, 3), caps[`home-${mark}`]], 2, FRAME_END, WIDTH);
-const finger = group(copies(caps.finger, 6), 3, FRAME_END, WIDTH);
-const thumbs = group(copies(caps.thumb, 6), 3, FRAME_END, WIDTH);
+const homeRow = group([...copies(caps.finger, 3), caps[`home-${mark}`]], FRAME_END, WIDTH);
+const finger = group(copies(caps.finger, 6), FRAME_END, WIDTH);
+const thumbs = group(copies(caps.thumb, 6), FRAME_END, WIDTH);
 writeGroup('keycap-group-home-row', homeRow);
 writeGroup('keycap-group-finger', finger);
 writeGroup('keycap-group-thumbs', thumbs);

@@ -41,13 +41,18 @@ node case/fluidcad/tools/keycap-files.mjs          # home caps with the hexagon
 node case/fluidcad/tools/keycap-files.mjs dots     # home caps with three dots
 ```
 
-For printing by object (OrcaSlicer: print sequence "by object", which gives cleaner caps than printing all at once), the caps come in tight groups. Each group stands in two rows back to back, with 1.5 mm between neighbours, and the cross bars of the support frames overlap, so a group is one stable object. A full set is seven groups:
+For printing by object (OrcaSlicer: print sequence "by object", which gives cleaner caps than printing all at once), the caps come in groups. In each group the caps stand in a ring, top surfaces outwards, and the thin support frames are joined in the middle, so a group is one stable object:
 
-| Group | Caps | Count | Contents |
+- **Square of four:** the pinwheel of the original clusters. Each cap stands 11.35 mm from the centre, shifted 2 mm sideways, and the frames cross in a grid.
+- **Hexagon of six:** the caps stand on the sides of a hexagon, 18.35 mm from the centre, with 1.5 mm between neighbours at their inner corners. A flat hexagonal ring, two layers thick, joins the cross bars of all six frames.
+
+A full set is seven groups:
+
+| Group | Shape | Count | Contents |
 | --- | --- | --- | --- |
-| Home row | 4 | 2 | three finger caps and the index finger home cap |
-| Finger | 6 | 4 | finger caps for the keys around the home rows |
-| Thumbs | 6 | 1 | the thumb caps |
+| Home row | square of 4 | 2 | three finger caps and the index finger home cap |
+| Finger | hexagon of 6 | 4 | finger caps for the keys around the home rows |
+| Thumbs | hexagon of 6 | 1 | the thumb caps |
 
 ![The seven print groups on one plate, the thumb group in an accent colour](../images/keycaps-print-groups.png)
 
