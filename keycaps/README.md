@@ -1,8 +1,58 @@
 # Keycaps
 
-Sculpted Choc v1 keycaps for the minY grid of 19 × 16 mm. There are four profiles. All of them are built to print standing on one edge, with an integrated support under the stem, so the slicer needs no supports.
+Choc v1 keycaps for the minY grid of 19 × 16 mm, and a knob for the encoder. Both are modelled in FluidCAD and fully parametric: [keycap.part.js](../case/fluidcad/keycap.part.js) and [encoder-knob.part.js](../case/fluidcad/encoder-knob.part.js). The caps are rebuilt from the sculpted caps that were printed first. Those are kept below as the original, with the geometry measured from them.
 
-![The four profiles in print orientation: front, back, top face and side](../images/keycaps-profiles.png)
+![Finger cap, home caps with hexagon and with dots, the three thumb caps in the eye colours, and the knob](../images/keycaps-and-knob.png)
+
+## Parametric keycaps
+
+All caps print standing on their front edge. An integrated support carries the stem legs, so the slicer needs no supports. Everything that was measured on the original caps is kept: footprint 18.3 × 15.3 mm, the solid body with a 1 mm pocket underneath, the Choc v1 stem and the support with its frame. What changed is the top surface:
+
+- **Finger (dish):** flat, without the tilt of the old slope caps, and with the shallow dish of the old default cap (0.55 mm across, 0.35 mm along, measured 6 mm from the centre). The parameter **Tilt along the column (°)** brings a tilt back if needed (the old slope caps had about 14°).
+- **Thumb (saddle):** concave along the column, so the thumb lies in a shallow trough that runs along the thumb row (0.8 mm, **Saddle trough**). Convex across, so the edges roll away under the thumb instead of digging into it (0.5 mm, **Saddle roll-off**). The thumb caps are 0.5 mm higher at the centre, so the rolled-off edges stay thick enough.
+- **Homing mark:** none, three dots as on the old home cap, or a raised hexagon outline in the style of the eyes on the middle cover.
+
+Both surfaces are built the same way. An arc across the key is revolved about an axis parallel to X that lies above the cap, and the revolved body is cut from the blank. The arc decides the shape across the key (concave for the dish, convex for the saddle), and the height of the axis decides the shape along it. The top edge is then rounded with 2 mm.
+
+Colours: the case is beige, so all finger caps are beige. The index finger home caps carry the mark in the same colour. The three thumb caps per half take the eye colours blue, pink and green. Each cap is one colour, since a cap printed on edge would need a filament change in almost every layer for a coloured detail on its top.
+
+| Profile | Per half | Total | Colour |
+| --- | --- | --- | --- |
+| Finger | 15 | 30 | beige |
+| Home (index finger) | 1 | 2 | beige |
+| Thumb | 3 | 6 | blue, pink, green |
+
+## Encoder knob
+
+A hexagonal knob like the eyes on the middle cover. Its top carries the same eye: a 0.6 mm colour inlay with an open centre and a recessed outline (blue by default; **Eye as colour inlay** off leaves only the outline). The knob prints upside down on its top, so the eye sits in the first three layers.
+
+- 19 mm across the corners, 8.4 mm high, 1 mm above the middle cover.
+- D bore for the measured shaft: Ø 6 mm, 4.5 mm from the flat to the opposite side, tip 7.44 mm above the cover, flat 7 mm long. Clearance 0.15 mm per side, a 0.5 mm lead-in at the entrance and 0.4 mm of room above the tip.
+- Three crush ribs on the round side of the bore reach 0.1 mm into the shaft and press it against the flat, so the knob holds without a set screw. If it sits too tight or too loose, change **Crush rib interference (mm)** or **Bore clearance (mm)**.
+
+## Print files
+
+```sh
+node case/fluidcad/tools/keycap-files.mjs          # home caps with the hexagon
+node case/fluidcad/tools/keycap-files.mjs dots     # home caps with three dots
+```
+
+The script writes into `case/fluidcad/print/keycaps/`:
+
+| File | Contents |
+| --- | --- |
+| `keycaps-beige.stl` | The 30 finger caps and the 2 home caps of a full set, on one plate |
+| `keycaps-thumbs.stl` | The 6 thumb caps in three rows of two. Split it into objects in the slicer and give each row its colour: blue, pink, green from front to back. |
+| `keycap-finger`, `keycap-home-<mark>`, `keycap-thumb` | One cap each, as STEP and STL |
+| `encoder-knob.stl`, `encoder-knob-eye.stl` | Knob and eye inlay, lined up. Load both as one object with two parts. |
+
+The settings of the original caps should work for the new ones too: 0.12 mm layers, 4 walls, supports only where painted.
+
+## Original sculpted caps
+
+Sculpted Choc v1 caps in four profiles, all built to print standing on one edge, with an integrated support under the stem.
+
+![The four original profiles in print orientation: front, back, top face and side](../images/keycaps-profiles.png)
 
 | File | Contents |
 | --- | --- |
@@ -11,9 +61,7 @@ Sculpted Choc v1 keycaps for the minY grid of 19 × 16 mm. There are four profil
 
 The print projects [keyboard_p1s.3mf](../case/keyboard_p1s.3mf) (Bambu P1S) and [keyboard_artisan.3mf](../case/keyboard_artisan.3mf) (Snapmaker Artisan) contain the same four meshes on several plates, singly, in grids and as clusters of four.
 
-This page records the geometry measured from these files, as the basis for rebuilding the caps in CAD.
-
-## Profiles
+### Profiles
 
 | Profile | Use | Volume | PLA | Top surface |
 | --- | --- | --- | --- | --- |
@@ -35,11 +83,11 @@ A full set for the 38 keys, assuming top and bottom row get the slope profile an
 
 Together that is about 47 cm³, or 59 g of PLA. The old 36-key set in `keyboard_p1s.3mf` (plates 7–9) has 20 slope, 9 default, 1 home and 6 thumb caps. The half set in `keyboard_artisan.3mf` has 11 slope caps instead of 10.
 
-## Geometry
+### Geometry
 
 Key coordinates: X across the key (along the row), Y along the column, Z up. Z = 0 is the floor of the pocket on the underside of the cap. In print orientation, X stays, Z points sideways (to −Y in the files), and the key's Y becomes the print height: the cap stands on one of its Y edges, on the thick edge for slope and thumb.
 
-### Body
+#### Body
 
 - Footprint 18.3 × 15.3 mm (X × Y), corner radius 3.0 mm. That leaves a gap of 0.7 mm to the neighbours in both directions.
 - Side walls are vertical. The top edge is rounded with a radius of about 2 mm all around.
@@ -47,7 +95,7 @@ Key coordinates: X across the key (along the row), Y along the column, Z up. Z =
   - The pocket walls are chamfered at 45° (about 1 mm wide), so they print without support when the cap stands on its edge.
   - The rim is about 1.7 mm wide at the Y edges and about 0.6 mm wide plus the chamfer at the X edges.
 
-### Top surface
+#### Top surface
 
 Heights above the pocket floor. "Edge" means 6 mm from the centre across X; outside that the surface rounds over into the side wall.
 
@@ -61,13 +109,13 @@ Heights above the pocket floor. "Edge" means 6 mm from the centre across X; outs
 - For slope and thumb the dish lies on a tilted plane. The thick edge stands on the print bed.
 - Homing dots (home only): three domes on the centre line across X, at X = −2, 0 and +2 mm, Ø 1.2 mm at the base and 0.5 mm high.
 
-### Stem (Choc v1)
+#### Stem (Choc v1)
 
 - Two legs, 1.3 mm wide in X and 2.7 mm long in Y, centred at X = ±2.9 mm (5.8 mm apart) and in the middle of the cap in Y.
 - They are 4.0 mm long from the pocket floor.
 - Vertical edges are chamfered by 0.2 mm, and the tips by 0.15 mm.
 
-### Integrated support
+#### Integrated support
 
 The cap prints standing on edge, so the underside of the stem legs overhangs by 4 mm. The integrated support carries it:
 
@@ -77,7 +125,7 @@ The cap prints standing on edge, so the underside of the stem legs overhangs by 
 
 The legs therefore bridge only from the pocket floor to the wall, about 3.2 mm.
 
-## Print settings used so far
+### Print settings used so far
 
 Both projects use 0.12 mm layers (first layer 0.2 mm), 4 walls, 35 % infill, no brim and supports only where painted ("normal (manual)"), so the integrated support is the only one.
 

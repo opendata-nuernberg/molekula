@@ -1,6 +1,7 @@
 import { assembly, configurations, insert, param } from 'fluidcad/core';
 import { bottomShell } from './bottom-shell.part.js';
 import { components } from './components.part.js';
+import { encoderKnob } from './encoder-knob.part.js';
 import { pcbs } from './pcbs.part.js';
 import { topShell } from './top-shell.part.js';
 
@@ -39,7 +40,10 @@ export const keyboard = assembly('Molekula · Keyboard', () => {
 
   insert(bottomShell, values).grounded().name('Bottom shell');
   insert(pcbs, values).grounded().name('PCBs');
-  if (showTop) insert(topShell, values).grounded().name('Top shell').transparent(0.35);
+  if (showTop) {
+    insert(topShell, values).grounded().name('Top shell').transparent(0.35);
+    insert(encoderKnob, values).grounded().name('Encoder knob');
+  }
   if (showComponents) {
     insert(components, { ...values, 'Keys pressed': pressed, 'Detailed models (slow)': detailed }).grounded().name('Components');
   }

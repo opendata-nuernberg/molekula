@@ -80,7 +80,9 @@ function measuredBodies() {
   return [
     box('J13 · Helios (measured)', [helios.center[0], (hy[0] + hy[1]) / 2], 17.8, hy[1] - hy[0], 0.05, MEASURED.usbTop, COLORS.helios),
     box('SW38 · encoder body (measured)', enc.center, ENCODER.body, ENCODER.body, 0.05, MEASURED.encoderBody, COLORS.encoder),
-    cylinder('SW38 · encoder bushing', enc.center, ENCODER.bushing, MEASURED.encoderBody, MEASURED.encoderBushing, COLORS.encoder),
+    ...(MEASURED.encoderBushing > MEASURED.encoderBody
+      ? [cylinder('SW38 · encoder bushing', enc.center, ENCODER.bushing, MEASURED.encoderBody, MEASURED.encoderBushing, COLORS.encoder)]
+      : []),
     cylinder('SW38 · encoder shaft (measured tip)', enc.center, ENCODER.shaft, MEASURED.encoderBushing, MEASURED.encoderTip, COLORS.encoder),
   ];
 }

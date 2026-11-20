@@ -34,12 +34,17 @@ export function shellParams() {
  * board. They replace the KiCad 3D models where those differ from the real assembly: the
  * Helios is soldered almost flat onto the board with its parts facing up (the model puts it
  * on 7.8 mm headers, upside down), and the encoder body is taller than in the model.
- * encoderBushing is not measured: EC11 bushings are about 5 mm long.
+ * The encoder shaft was measured again on the printed case: its tip is 7.44 mm above the
+ * cover and its flat (7 mm long) starts 0.44 mm above it, so no threaded bushing stands out
+ * of the encoder body (encoderBushing = encoderBody).
  */
-export const MEASURED = { usbTop: 4.5, usbHeight: 3.16, encoderBody: 7.0, encoderBushing: 12.0, encoderTip: 15.6 };
+export const MEASURED = { usbTop: 4.5, usbHeight: 3.16, encoderBody: 7.0, encoderBushing: 7.0, encoderTip: 7.0 + 7.44 };
 
-/** EC11 body footprint (square) and shaft diameters. */
-export const ENCODER = { body: 12.3, bushing: 7, shaft: 6 };
+/**
+ * EC11 body footprint (square) and shaft diameters. The shaft is a D: acrossFlat from the flat
+ * to the opposite side, flatLength measured down from the tip.
+ */
+export const ENCODER = { body: 12.3, bushing: 7, shaft: 6, acrossFlat: 4.5, flatLength: 7 };
 
 /**
  * Opening for the USB-C plug, centred on the Helios receptacle, in the frame of the middle

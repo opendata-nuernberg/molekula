@@ -7,7 +7,7 @@ Molekula is a split ergonomic keyboard with 19 keys per side, a minY grid of 19 
 | [pcb/](pcb/) | KiCad project, schematic, board and library tables for the 38-key fork |
 | [production/](production/) | Gerber and drill data as a manufacturing package, plus BOM and placement data for SMD assembly |
 | [case/](case/) | Both case variants: the split case with magnetic connectors and the FluidCAD model of the unibody case, plus design concepts |
-| [keycaps/](keycaps/) | Sculpted Choc keycaps in four profiles, built to print on edge with an integrated support |
+| [keycaps/](keycaps/) | Parametric Choc keycaps (flat finger caps, saddle thumb caps) and the encoder knob, both printed without slicer supports, plus the original sculpted caps |
 | [images/](images/) | Renders of the case variants |
 
 ## Case variants
@@ -33,11 +33,13 @@ This variant has no magnetic connectors. It is one continuous case made of a bot
 The top shell consists of three print parts:
 
 - **Top plates (left and right):** 2.2 mm thick and flat, lying on the key boards. They hide the green boards. The switches are pushed through 14 mm cut-outs into the hotswap sockets, and their clips catch under the plate as on a normal Choc plate. The outer wall of the bottom shell rises to the top of the plates, so the plates sit recessed in a pocket and the side shows one flat wall. The key boards have no mounting holes. Instead, seven crush ribs per side on the inside of the wall hold each plate: they stand 0.35 mm out of the wall and are squeezed by 0.15 mm when the plate is pressed in.
-- **Middle cover:** covers the Helios, the FFC sockets and the cables. Its flat top reaches over the cable gap onto the inner edges of both plates and clamps them. It is 7 mm high above the board, just as high as the square body of the encoder, which sits flush in a square opening. The cut-out for the USB-C plug is centred on the real receptacle and continues as a small notch in the bottom shell. The heights come from the built keyboard: the Helios is soldered almost flat onto the board with its parts facing up, the top of the USB-C receptacle is 4.5 mm above the board, the encoder body 7 mm, the shaft tip 15.6 mm. In the model, Helios and encoder are built from these measurements instead of the KiCad 3D models.
+- **Middle cover:** covers the Helios, the FFC sockets and the cables. Its flat top reaches over the cable gap onto the inner edges of both plates and clamps them. It is 7 mm high above the board, just as high as the square body of the encoder, which sits flush in a square opening. The cut-out for the USB-C plug is centred on the real receptacle and continues as a small notch in the bottom shell. The heights come from the built keyboard: the Helios is soldered almost flat onto the board with its parts facing up, the top of the USB-C receptacle is 4.5 mm above the board, the encoder body 7 mm. The shaft tip is 7.44 mm above the cover, and the encoder has no threaded bushing standing out of its body. In the model, Helios and encoder are built from these measurements instead of the KiCad 3D models.
 
 On top of the middle cover sits a small motif: three hexagonal eyes in blue, pink and green, arranged in a triangle, with a recessed outline around each eye and a recessed line down to the encoder. The eyes are 0.6 mm deep colour inlays with an open centre in which the cover colour shows; the outlines and the line are plain recesses without a colour of their own. With the cover in the base colour this needs four filaments, for example an AMS with four slots. The parameter **Guardian motif on the middle cover** switches it off.
 
 ![Middle cover with the three eye inlays](images/unibody-cover-eyes.png)
+
+The encoder gets a hexagonal knob with an eye on top, 1 mm above the cover; it is described with the keycaps in [keycaps/](keycaps/), together with its print files.
 
 Only three M2 screws hold the case together. They go from below through the bottom shell and the holes H5–H7 of the MCU board into M2 heat-set inserts (Ø 3.2 mm hole, 4.5 mm deep) in the middle cover. The access holes from the desk side are 11 mm wide, enough for a screwdriver shaft of 10 mm. M2 × 8 screws reach 4.3 mm into the inserts. Nothing is glued.
 
@@ -61,7 +63,7 @@ Still open:
 
 - The splay has not been test-printed yet; 12° is a starting point.
 - The crush ribs have not been test-printed yet. If the plates sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**.
-- The encoder knob is not modelled yet.
+- Keycaps and encoder knob have not been test-printed yet; see [keycaps/](keycaps/).
 - The eye motif has not been test-printed yet. The first colour concept, with more elements than were built, is kept in [case/concepts/guardian-motif.html](case/concepts/guardian-motif.html).
 - The battery sockets J7 and J12 on the top side of the key boards would collide with the plates if populated.
 
