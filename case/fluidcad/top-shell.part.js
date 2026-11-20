@@ -113,9 +113,12 @@ export const topShell = part('Molekula · Top shell', () => {
     const into = Math.min(14.5 - p.cableGap - CABLE.intoMiddle, ...CABLE.y.map(y => side * reachIntoMiddle(side, p, y, 9.5)));
     const x0 = side * into;
     const x1 = side * (14.5 + CABLE.intoHalf);
-    rectBodies(region, p,
-      [{ center: [(x0 + x1) / 2, (CABLE.y[0] + CABLE.y[1]) / 2], width: Math.abs(x1 - x0), height: CABLE.y[1] - CABLE.y[0] }],
-      PT - 1, PT + CABLE.height, `${R} · cable pass`, { remove: [plates[region], middle] });
+    const pass = [{ center: [(x0 + x1) / 2, (CABLE.y[0] + CABLE.y[1]) / 2], width: Math.abs(x1 - x0), height: CABLE.y[1] - CABLE.y[0] }];
+    rectBodies(region, p, pass, PT - 1, PT + CABLE.height, `${R} · cable pass`, { remove: [plates[region]] });
+    // The cover gets its own cut reaching well below it: cut together with the plate, it
+    // stopped at the plate's bottom face and left a thin tilted wedge under the cover that
+    // the slicer had to bridge.
+    rectBodies(region, p, pass, -10, PT + CABLE.height, `${R} · cable pass in the cover`, { remove: [middle] });
   }
 
   // Middle, in the frame of the upside-down board (KiCad X mirrored).
