@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "module": "node20",
+    "maxNodeModuleJsDepth": 8
+  }
+}

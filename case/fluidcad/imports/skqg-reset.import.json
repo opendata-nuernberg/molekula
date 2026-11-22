@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "unit": "mm",
+  "sourceUnits": {
+    "length": [
+      "MILLIMETRE",
+      "METRE"
+    ],
+    "angle": [
+      "RADIAN"
+    ]
+  },
+  "importedAt": "2026-11-18T14:26:35.586Z"
+}
