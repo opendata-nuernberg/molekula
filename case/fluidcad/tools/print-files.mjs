@@ -19,7 +19,8 @@
  * the middle cover, so the four STL files line up: load them together in the slicer as one
  * object with several parts and give each eye its filament.
  *
- * Output in case/fluidcad/print/ (not tracked in Git), ASCII STL:
+ * Output in case/fluidcad/print/ (not tracked in Git), binary STL with welded vertices
+ * (see stl.mjs):
  *   bottom-shell-wedge<mm>.step/.stl
  *   top-plate-left-wedge<mm>, top-plate-right-wedge<mm>, middle-cover-wedge<mm> (.step/.stl)
  *   middle-cover-eye-blue/-pink/-green-wedge<mm>.stl, middle-cover-with-eyes-wedge<mm>.step
@@ -28,6 +29,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { binaryStl, triangles } from './stl.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.resolve(HERE, '..');
@@ -174,9 +176,7 @@ function write(shape, base) {
   w.Transfer(shape, oc.STEPControl_StepModelType.STEPControl_AsIs, true, new oc.Message_ProgressRange());
   w.Write('/out.step');
   fs.writeFileSync(`${base}.step`, oc.FS.readFile('/out.step'));
-  new oc.BRepMesh_IncrementalMesh(shape, 0.02, false, 0.2, false);
-  new oc.StlAPI_Writer().Write(shape, '/out.stl', new oc.Message_ProgressRange());
-  fs.writeFileSync(`${base}.stl`, oc.FS.readFile('/out.stl'));
+  fs.writeFileSync(`${base}.stl`, binaryStl([{ tris: triangles(oc, shape) }], 'Molekula case'));
 }
 
 fs.mkdirSync(OUTPUT, { recursive: true });

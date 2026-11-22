@@ -40,6 +40,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { THEMES } from '../themes.js';
+import { binaryStl, triangles } from './stl.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.resolve(HERE, '..');
@@ -151,38 +152,6 @@ function size(shape) {
   return `${(hi[0] - lo[0]).toFixed(1)} × ${(hi[1] - lo[1]).toFixed(1)} × ${(hi[2] - lo[2]).toFixed(1)} mm`;
 }
 
-/** Triangles of a shape (9 coordinates each). The binding writes ASCII STL only. */
-function triangles(shape) {
-  new oc.BRepMesh_IncrementalMesh(shape, 0.02, false, 0.2, false);
-  new oc.StlAPI_Writer().Write(shape, '/out.stl', new oc.Message_ProgressRange());
-  const text = Buffer.from(oc.FS.readFile('/out.stl')).toString('latin1');
-  const v = [];
-  const re = /vertex\s+(\S+)\s+(\S+)\s+(\S+)/g;
-  for (let m; (m = re.exec(text));) v.push(+m[1], +m[2], +m[3]);
-  return Float64Array.from(v);
-}
-
-/** Binary STL of triangle sets, each moved by [dx, dy]: a fifth of the size of ASCII. */
-function binaryStl(sets) {
-  const n = sets.reduce((sum, { tris }) => sum + tris.length / 9, 0);
-  const out = Buffer.alloc(84 + 50 * n);
-  out.write('Molekula keycaps', 0, 'latin1');
-  out.writeUInt32LE(n, 80);
-  let o = 84;
-  for (const { tris, at = [0, 0] } of sets) {
-    for (let i = 0; i < tris.length; i += 9) {
-      const [ax, ay, az, bx, by, bz, cx, cy, cz] = tris.subarray(i, i + 9);
-      const [ux, uy, uz, wx, wy, wz] = [bx - ax, by - ay, bz - az, cx - ax, cy - ay, cz - az];
-      const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
-      const l = Math.hypot(nx, ny, nz) || 1;
-      [nx / l, ny / l, nz / l, ax + at[0], ay + at[1], az, bx + at[0], by + at[1], bz, cx + at[0], cy + at[1], cz]
-        .forEach((x, k) => out.writeFloatLE(x, o + 4 * k));
-      o += 50;
-    }
-  }
-  return out;
-}
-
 function write(shape, name, { step = true } = {}) {
   const base = path.join(OUTPUT, name);
   if (step) {
@@ -191,8 +160,8 @@ function write(shape, name, { step = true } = {}) {
     w.Write('/out.step');
     fs.writeFileSync(`${base}.step`, oc.FS.readFile('/out.step'));
   }
-  const tris = triangles(shape);
-  fs.writeFileSync(`${base}.stl`, binaryStl([{ tris }]));
+  const tris = triangles(oc, shape);
+  fs.writeFileSync(`${base}.stl`, binaryStl([{ tris }], 'Molekula keycaps'));
   console.log(`${name}: ${(volume(shape) / 1000).toFixed(2)} cm³, ${size(shape)} -> ${path.relative(process.cwd(), base)}${step ? '.step/' : '.'}stl`);
   return tris;
 }
@@ -263,7 +232,7 @@ function group(caps, frameEnd, width) {
 }
 
 function writeGroup(name, sets) {
-  fs.writeFileSync(path.join(OUTPUT, `${name}.stl`), binaryStl(sets));
+  fs.writeFileSync(path.join(OUTPUT, `${name}.stl`), binaryStl(sets, 'Molekula keycaps'));
   console.log(`${name}: ${sets.length} parts -> ${path.relative(process.cwd(), path.join(OUTPUT, name))}.stl`);
 }
 
