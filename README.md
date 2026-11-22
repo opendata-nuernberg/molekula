@@ -18,7 +18,7 @@ Molekula is a split ergonomic keyboard with 19 keys per side, a minY grid of 19 
 
 The two halves are joined by magnetic connector boards and can be separated. The Onshape model is available as [STEP](case/onshape/molekula.step). The [Artisan](case/keyboard_artisan.3mf) and [P1S](case/keyboard_p1s.3mf) print projects contain the case tops with 19 switch openings per side.
 
-### Unibody case with printed tenting (work in progress)
+### Unibody case with printed tenting
 
 ![Unibody case with a 15 mm center wedge](images/unibody-tented.png)
 
@@ -59,13 +59,7 @@ node case/fluidcad/tools/print-files.mjs 15   # center wedge thickness in mm
 
 With the motif the script also writes the three eye inlays as `middle-cover-eye-blue/-pink/-green-wedge<mm>.step/.stl`, moved like the cover, and all four together as `middle-cover-with-eyes-wedge<mm>.step`. Load the cover and the three eyes together in the slicer as one object with several parts (Bambu Studio and OrcaSlicer ask when several files are loaded at once) and give each eye its filament. The cover lies on its top face, so all colours sit in the first three layers.
 
-Still open:
-
-- The splay has not been test-printed yet; 12° is a starting point.
-- The crush ribs have not been test-printed yet. If the plates sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**.
-- Keycaps and encoder knob have not been test-printed yet; see [keycaps/](keycaps/).
-- The eye motif has not been test-printed yet. The first colour concept, with more elements than were built, is kept in [case/concepts/guardian-motif.html](case/concepts/guardian-motif.html).
-- The battery sockets J7 and J12 on the top side of the key boards would collide with the plates if populated.
+The case, the plates with their crush ribs, the splay and the eye motif have been printed and fit. If plates printed on another printer sit too tight or too loose, change the parameter **Gap between top plate and wall (mm)**. Leave the battery sockets J7 and J12 on the top side of the key boards unpopulated: they would collide with the plates. The first colour concept for the motif, with more elements than were built, is kept in [case/concepts/guardian-motif.html](case/concepts/guardian-motif.html).
 
 ## Board and manufacturing
 
